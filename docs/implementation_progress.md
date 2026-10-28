@@ -9,6 +9,6 @@ updated after successful synchronization.
 3. Local pipeline: cent-exact plans, versioned quarantine, deterministic baseline and exports.
 4. State, reservations and recovery: transactional SQLite, stable intents, simulated executor and reconciliation.
 5. Economic selection: supported empirical plan scoring, shared-quota heuristic, explicit lender constraints and provenance.
-6. Candidate / legacy evaluation: pending.
+6. Candidate / legacy evaluation: frozen April replay, reconciled lender accounting, calibration, uncertainty and explicitly scoped ceiling; live rollout not approved.
 7. Concurrency, failure and performance: pending.
 8. Final delivery: pending.

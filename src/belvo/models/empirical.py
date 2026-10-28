@@ -66,8 +66,10 @@ class EmpiricalModel:
         self.fitted_through = ""
         self.global_rate = 0.0
         self.training_hash = ""
+        self._estimate_cache = {}
 
     def fit(self, frame: pd.DataFrame, through: str):
+        self._estimate_cache.clear()
         sample = frame.loc[frame.attempt_date.le(through) & frame.pure].copy()
         if sample.empty:
             raise ValueError("No available training labels; use the deterministic baseline")
@@ -87,11 +89,14 @@ class EmpiricalModel:
         return self
 
     def estimate(self, loan: Loan, plan: Plan, provider: str) -> Estimate:
-        if self.fitted_through >= loan.day:
+        if self.fitted_through > self.protocol.known_attempt_through(loan.day):
             raise ValueError("Future labels in model")
         count = len(plan.amounts)
         band = commission_percent(loan.dpd)
         fraction = fraction_bin(sum(plan.amounts), min(loan.balance, count * loan.cap))
+        key = (loan.client_id, provider, count, band, fraction, len(set(plan.providers)) == 1)
+        if key in self._estimate_cache:
+            return self._estimate_cache[key]
         parent_s, parent_n = self.parents.get((provider, count, band), (0, 0))
         strength = self.protocol.values["prior_strength"]
         prior = (parent_s + strength * self.global_rate) / (parent_n + strength)
@@ -100,7 +105,9 @@ class EmpiricalModel:
         uncertainty = math.sqrt(mean * (1 - mean) / (n + strength + 1))
         lower = max(0.0, mean - self.protocol.values["conservative_z"] * uncertainty)
         supported = n >= self.protocol.values["min_cell_attempts"] and len(set(plan.providers)) == 1
-        return Estimate(mean, lower, n, supported, "cell" if supported else "backoff")
+        result = Estimate(mean, lower, n, supported, "cell" if supported else "backoff")
+        self._estimate_cache[key] = result
+        return result
 
     def evaluate(self, loan: Loan, plan: Plan) -> dict:
         estimates = [self.estimate(loan, plan, provider) for provider in plan.providers]

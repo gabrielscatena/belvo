@@ -1,0 +1,37 @@
+kind,demand_multiplier,capacity_multiplier,capacity_satisfied,required_a,estimated_margin,allocation,client_id
+April frozen-action volume/quota stress (no reoptimization),0.5,0.0,False,137981.0,,,
+April frozen-action volume/quota stress (no reoptimization),0.5,0.5,False,137981.0,,,
+April frozen-action volume/quota stress (no reoptimization),0.5,1.0,True,137981.0,559234.9611126052,,
+April frozen-action volume/quota stress (no reoptimization),0.5,1.5,True,137981.0,559234.9611126052,,
+April frozen-action volume/quota stress (no reoptimization),1.0,0.0,False,275962.0,,,
+April frozen-action volume/quota stress (no reoptimization),1.0,0.5,False,275962.0,,,
+April frozen-action volume/quota stress (no reoptimization),1.0,1.0,True,275962.0,1228967.159794271,,
+April frozen-action volume/quota stress (no reoptimization),1.0,1.5,True,275962.0,1228967.159794271,,
+April frozen-action volume/quota stress (no reoptimization),1.5,0.0,False,413943.0,,,
+April frozen-action volume/quota stress (no reoptimization),1.5,0.5,False,413943.0,,,
+April frozen-action volume/quota stress (no reoptimization),1.5,1.0,True,413943.0,1898699.3584759368,,
+April frozen-action volume/quota stress (no reoptimization),1.5,1.5,True,413943.0,1898699.3584759368,,
+Fixed-action allocation sensitivity,,,,,213242.30862156927,equal_lenders,C01
+Fixed-action allocation sensitivity,,,,,221617.50452663313,equal_lenders,C02
+Fixed-action allocation sensitivity,,,,,57657.18799671559,equal_lenders,C03
+Fixed-action allocation sensitivity,,,,,133985.1095519894,equal_lenders,C04
+Fixed-action allocation sensitivity,,,,,33285.9409789347,equal_lenders,C05
+Fixed-action allocation sensitivity,,,,,70948.83066593435,equal_lenders,C06
+Fixed-action allocation sensitivity,,,,,111338.34942958925,equal_lenders,C07
+Fixed-action allocation sensitivity,,,,,41189.98120735166,equal_lenders,C08
+Fixed-action allocation sensitivity,,,,,154633.89780523983,equal_lenders,C09
+Fixed-action allocation sensitivity,,,,,42533.12097742395,equal_lenders,C10
+Fixed-action allocation sensitivity,,,,,12981.418201279894,equal_lenders,C11
+Fixed-action allocation sensitivity,,,,,135553.50983160976,equal_lenders,C12
+Fixed-action allocation sensitivity,,,,,209250.90086264937,training_attempts,C01
+Fixed-action allocation sensitivity,,,,,220978.09434759358,training_attempts,C02
+Fixed-action allocation sensitivity,,,,,56204.58245125695,training_attempts,C03
+Fixed-action allocation sensitivity,,,,,132990.27962206706,training_attempts,C04
+Fixed-action allocation sensitivity,,,,,31233.015147532704,training_attempts,C05
+Fixed-action allocation sensitivity,,,,,72085.26334112888,training_attempts,C06
+Fixed-action allocation sensitivity,,,,,112706.49568795647,training_attempts,C07
+Fixed-action allocation sensitivity,,,,,36805.47669215503,training_attempts,C08
+Fixed-action allocation sensitivity,,,,,156538.94139047063,training_attempts,C09
+Fixed-action allocation sensitivity,,,,,41402.02587799355,training_attempts,C10
+Fixed-action allocation sensitivity,,,,,19294.043467511106,training_attempts,C11
+Fixed-action allocation sensitivity,,,,,139478.04090595545,training_attempts,C12

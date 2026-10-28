@@ -35,5 +35,6 @@ reports/pipeline/
 artifacts/runtime/
 tests/.state_test_*/
 tests/.pytest_tmp/
+reports/evaluation/**/loan_day_estimates.csv
 reports/implementation/stage3_daily/decisions.*
 reports/implementation/stage3_daily/source_versions.json

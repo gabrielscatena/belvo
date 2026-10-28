@@ -171,6 +171,7 @@ class Store:
                 amounts, providers = row["plan"]["amounts"], row["plan"]["providers"]
                 if (
                     len(amounts) != len(providers)
+                    or len(amounts) > self.protocol.values["max_installments"]
                     or any(p not in ("A", "B") for p in providers)
                     or any(type(m) is not int or not 0 < m <= loan.cap for m in amounts)
                     or sum(amounts) > loan.balance
@@ -192,7 +193,8 @@ class Store:
                 ):
                     aid = fingerprint([row["loan_id"], day, row["version"], row["plan"], index])
                     db.execute(
-                        "INSERT INTO attempts VALUES(?,?,?,?,?, 'ready',NULL,NULL)",
+                        "INSERT INTO attempts VALUES(?,?,?,?,?, 'ready',NULL,NULL) "
+                        "ON CONFLICT(id) DO UPDATE SET state='ready' WHERE attempts.state='cancelled'",
                         (aid, row["loan_id"], day, provider, amount),
                     )
             reported_rejections = []

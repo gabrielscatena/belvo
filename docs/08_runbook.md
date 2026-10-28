@@ -34,3 +34,13 @@ The economic command fits only available pre-April labels, saves model provenanc
 exports expected economics and lender constraint statuses. It does not execute unless
 `--execute` is supplied. The default lender horizon check assumes zero pending/future
 contribution; unmet constraints are expected warnings, not proof of infeasibility.
+
+```powershell
+python -m belvo.evaluation.offline
+```
+
+The evaluator takes several minutes on the full CSVs. It writes model provenance,
+monthly/per-lender margins, calibration, cluster uncertainty, daily capacity and scenario
+tables to a new `reports/evaluation/<run-id>` directory. Published frozen results are in
+`reports/evaluation/frozen_v1`; do not overwrite that checkpoint. No April labels train
+the policy. Results are conditional model estimates; consult the rollout blockers.

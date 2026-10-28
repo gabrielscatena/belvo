@@ -59,3 +59,4 @@ are measured work intervals, not estimates inferred from commits.
 | 3 | 14:16:09 | 14:17:42 | 1.55 | Exercise daily flow → implement cent-exact plans/quarantine/export → 18 tests pass; April 1 produces 4,640 unique loan decisions, no invalid records. |
 | 4 | 14:17:52 | 14:22:08 | 4.27 | Recover safely → add atomic reservations/outbox, durable simulator and reconciliation → 26 tests pass including unknown delivery, correction and rollback. |
 | 5 | 14:22:13 | 14:26:16 | 4.05 | Compare complete plans → add empirical scoring, support guards and lender-priority quota allocation → 30 tests pass; 4,640 economic decisions generated with 9,076 reserved A units. |
+| 6 | 14:26:16 | 14:38:35 | 12.32 | Test economic claims → replay April, reconcile lenders and stress support/quota → 32 tests pass; results published with calibration error and explicit rollout blockers. |
