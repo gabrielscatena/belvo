@@ -137,6 +137,8 @@ class Store:
                     (loan.loan_id, day),
                 ).fetchone()[0]
                 if unsafe:
+                    if old and old["version"] != loan.version:
+                        self._cancel_unsent(db, loan.loan_id, day)
                     value = (
                         json.loads(old["payload"])
                         if old
@@ -159,6 +161,23 @@ class Store:
                     self._cancel_unsent(db, loan.loan_id, day)
                     pending.append(loan)
             selected, _ = selector(pending, self.quota(db)["free"], self.protocol)
+            loans_by_id = {loan.loan_id: loan for loan in pending}
+            if {r.get("loan_id") for r in selected} != set(loans_by_id) or len(selected) != len(
+                pending
+            ):
+                raise ValueError("Selector must return exactly one decision per pending loan")
+            for row in selected:
+                loan = loans_by_id[row["loan_id"]]
+                amounts, providers = row["plan"]["amounts"], row["plan"]["providers"]
+                if (
+                    len(amounts) != len(providers)
+                    or any(p not in ("A", "B") for p in providers)
+                    or any(type(m) is not int or not 0 < m <= loan.cap for m in amounts)
+                    or sum(amounts) > loan.balance
+                    or row.get("version") != loan.version
+                    or ("A" in providers and not self.protocol.a_available(day))
+                ):
+                    raise ValueError("Selector returned an invalid plan")
             requested = sum(r["plan"]["providers"].count("A") for r in selected)
             if requested > self.quota(db)["free"]:
                 raise ValueError("Selector attempted quota overbooking")
@@ -187,6 +206,7 @@ class Store:
                     (row["loan_id"], day),
                 ).fetchone()[0]
                 if unsafe:
+                    self._cancel_unsent(db, row["loan_id"], day)
                     row = row | {
                         "status": "protected_invalid_correction",
                         "reason": row["reason"] + ";existing_submission_preserved",

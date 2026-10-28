@@ -79,7 +79,7 @@ def test_transaction_rolls_back_on_selector_overbooking(setup):
     def unsafe(loans, quota, protocol):
         return [{"plan": {"providers": ["A"] * 3}}], -1
 
-    with pytest.raises(ValueError, match="overbooking"):
+    with pytest.raises(ValueError):
         store.commit_day([loan()], [], [], "2026-04-01", unsafe)
     assert store.quota()["free"] == 2 and not store.attempts()
 

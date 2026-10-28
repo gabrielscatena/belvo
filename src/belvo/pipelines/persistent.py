@@ -21,6 +21,7 @@ def main():
     )
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--reconcile", action="store_true")
+    parser.add_argument("--policy", choices=["baseline", "economic"], default="baseline")
     args = parser.parse_args()
     p = Protocol.load(args.config)
     attempts = read_csv(args.data_dir / "payment_attempts.csv", {"attempt_date", "provider"})
@@ -30,7 +31,16 @@ def main():
     if args.reconcile:
         reconcile(store, provider)
     valid, rejected, raw = load_day(args.data_dir, args.date)
-    decisions = store.commit_day(valid, rejected, raw, args.date)
+    selector = None
+    if args.policy == "economic":
+        from belvo.models.empirical import fit_for_day, load_history
+        from belvo.optimization.select import EconomicSelector, zero_future_budget
+
+        history = load_history(args.data_dir)
+        model = fit_for_day(history, p, args.date)
+        selector = EconomicSelector(model, zero_future_budget(history, args.date, p))
+        model.save(args.state.with_suffix(".model.json"))
+    decisions = store.commit_day(valid, rejected, raw, args.date, selector)
     if args.execute:
         execute(store, provider, args.date)
     output = Path("reports/pipeline") / datetime.now().strftime("%Y%m%d_%H%M%S_%f")

@@ -58,3 +58,4 @@ are measured work intervals, not estimates inferred from commits.
 | 2 | 14:14:37 | 14:15:59 | 1.37 | Prevent evaluation leakage → freeze temporal/economic protocol and boundary tests → 14 tests pass, lender allocation fixed before test. |
 | 3 | 14:16:09 | 14:17:42 | 1.55 | Exercise daily flow → implement cent-exact plans/quarantine/export → 18 tests pass; April 1 produces 4,640 unique loan decisions, no invalid records. |
 | 4 | 14:17:52 | 14:22:08 | 4.27 | Recover safely → add atomic reservations/outbox, durable simulator and reconciliation → 26 tests pass including unknown delivery, correction and rollback. |
+| 5 | 14:22:13 | 14:26:16 | 4.05 | Compare complete plans → add empirical scoring, support guards and lender-priority quota allocation → 30 tests pass; 4,640 economic decisions generated with 9,076 reserved A units. |

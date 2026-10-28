@@ -8,3 +8,4 @@ already selected during the voice discussion.
 | [0001](0001_processing_boundary.md) | Accepted | Arrival processing; separate execution/reconciliation |
 | [0002](0002_versioned_validation.md) | Accepted | Versioned quarantine and automatic validation |
 | [0003](0003_local_transactional_store.md) | Accepted | Python/SQLite, atomic reservation and outbox |
+| [0004](0004_economic_policy.md) | Accepted for prototype | Empirical plan probabilities and constrained greedy selection |

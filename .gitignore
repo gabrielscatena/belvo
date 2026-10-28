@@ -34,5 +34,6 @@ logs/
 reports/pipeline/
 artifacts/runtime/
 tests/.state_test_*/
+tests/.pytest_tmp/
 reports/implementation/stage3_daily/decisions.*
 reports/implementation/stage3_daily/source_versions.json
