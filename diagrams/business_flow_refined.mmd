@@ -1,0 +1,44 @@
+
+flowchart LR
+    subgraph INTAKE["01  Portfolio intake"]
+        direction TB
+        A["Daily loan portfolio"] --> B["Validate & enrich"]
+    end
+
+    subgraph DECISION["02  Collection decision"]
+        direction TB
+        R["Business constraints"] -.-> C["Evaluate feasible options"]
+        C --> D{"Collect today?"}
+    end
+
+    subgraph EXECUTION["03  Payment execution"]
+        direction TB
+        E["Define installments,<br/>amounts & providers"] --> F["Submit to Provider A / B"]
+        F --> G["Next-day outcomes"]
+    end
+
+    subgraph FEEDBACK["04  Financial feedback"]
+        direction TB
+        H["Calculate net margin<br/>by lender & overall"] --> I["Update decision history"]
+    end
+
+    B --> C
+    D -->|Yes| E
+    D -->|No attempt| I
+    G --> H
+    I -.->|Next daily cycle| B
+
+    classDef input fill:#EAF2FF,stroke:#5B89C3,color:#163A68,stroke-width:1px;
+    classDef decision fill:#EAF7F0,stroke:#57A77B,color:#215A3F,stroke-width:1px;
+    classDef execution fill:#FFF3E4,stroke:#C99453,color:#704514,stroke-width:1px;
+    classDef feedback fill:#F1EEFF,stroke:#8A79BA,color:#473775,stroke-width:1px;
+
+    class A,B input;
+    class R,C,D decision;
+    class E,F,G execution;
+    class H,I feedback;
+
+    style INTAKE fill:#F8FAFF,stroke:#C8D7ED,stroke-width:1px;
+    style DECISION fill:#F8FCF9,stroke:#CBE6D4,stroke-width:1px;
+    style EXECUTION fill:#FFFBF6,stroke:#EAD8BC,stroke-width:1px;
+    style FEEDBACK fill:#FBFAFF,stroke:#DDD5F1,stroke-width:1px;
