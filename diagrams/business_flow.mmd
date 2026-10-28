@@ -1,2 +1,19 @@
-flowchart LR
-    A["Business flow: TODO"] --> B["Detail"]
+flowchart TD
+    A["Lender submits the daily portfolio"]
+    B["Receive and validate portfolio data"]
+    C["Enrich with historical decisions and available payment outcomes"]
+    D["Decision engine: select whether to collect, installment count, amounts, and providers"]
+    J{"Attempt collection today?"}
+    E["Generate collection attempts"]
+    F["Submit all selected installments on the same day to their assigned providers: A or B"]
+    G["Receive success or failure outcomes the next day"]
+    H["Calculate net margin by lender and overall"]
+    I["Record decisions and update history"]
+    K["Apply constraints: outstanding balance, lender installment caps, Provider A prepaid allocation and expiry, and lender profitability"]
+
+    A --> B --> C --> D
+    K --> D
+    D --> J
+    J -->|Yes| E --> F --> G --> H --> I
+    J -->|No| I
+    I -.->|"Inform future daily decisions"| C
