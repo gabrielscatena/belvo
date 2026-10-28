@@ -56,6 +56,7 @@ def main():
                 portfolio_clients={loan.client_id for loan in valid},
                 source_revision=1,
                 model_artifact=model.artifact() | {"model_hash": model.model_hash},
+                decision_basis=fingerprint({"model": model.model_hash, "lender_budget": required}),
             )
             commit_timings.append(perf_counter() - commit_started)
             timings.append(perf_counter() - start)

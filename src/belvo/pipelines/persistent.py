@@ -6,6 +6,7 @@ from datetime import date, datetime
 from pathlib import Path
 
 from belvo.config import Protocol
+from belvo.domain import fingerprint
 from belvo.pipelines.daily import export, load_day, read_csv
 from belvo.state import SimulatedProvider, Store, execute, reconcile
 
@@ -56,6 +57,7 @@ def main():
         rejected = [r for r in rejected if r["client_id"] == args.client]
         raw = [r for r in raw if r["payload"].get("client_id") == args.client]
     selector, model_artifact, model_path, history_issues = None, None, None, []
+    decision_basis = None
     if args.policy == "economic":
         from belvo.models.empirical import fit_for_day, load_history
         from belvo.optimization.select import (
@@ -89,6 +91,7 @@ def main():
         model = fit_for_day(history, p, args.date, allow_empty=True)
         if model is None:
             selector = no_history_decisions
+            decision_basis = "economic:no_available_training_history"
         else:
             requirements = zero_future_budget(
                 history, args.date, p, clients={r["client_id"] for r in client_rows}
@@ -104,6 +107,7 @@ def main():
             model_path = args.state.with_suffix(".models") / (model.model_hash + ".json")
             model.save(model_path)
             model_artifact = model.artifact() | {"model_hash": model.model_hash}
+            decision_basis = fingerprint({"model": model.model_hash, "lender_budget": requirements})
     decisions = store.commit_day(
         valid,
         rejected,
@@ -114,6 +118,7 @@ def main():
         args.source_revision,
         history_issues,
         model_artifact,
+        decision_basis,
     )
     if args.execute:
         execute(store, provider, args.date)

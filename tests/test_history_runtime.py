@@ -258,3 +258,30 @@ def test_cli_stale_portfolio_cannot_dispatch_after_a_paid_correction(tmp_path):
     store = Store(tmp_path / "state.db", Protocol.load())
     assert store.quota()["reserved"] == 0
     assert all(a["state"] == "cancelled" for a in store.attempts())
+
+
+def test_corrected_training_reopens_only_unsent_decisions_and_loss_of_history_cancels_them(
+    tmp_path,
+):
+    data = dataset(tmp_path, bad_day="2026-04-02")
+    rows = list(csv.DictReader((data / "loan_snapshots.csv").open()))
+    broken = [
+        r | {"outstanding_balance": "oops"} if r["snapshot_date"] == "2026-02-01" else r
+        for r in rows
+    ]
+    write_csv(data / "loan_snapshots.csv", broken)
+    first, _ = run_pipeline(tmp_path, data, output_name="without_history")
+    assert first[0]["reason"] == "no_available_training_history"
+    write_csv(data / "loan_snapshots.csv", rows)
+    corrected, _ = run_pipeline(tmp_path, data, output_name="corrected_history")
+    assert corrected[0]["status"] == "attempt"
+    assert corrected[0]["decision_basis"] != first[0]["decision_basis"]
+    write_csv(data / "loan_snapshots.csv", broken)
+    last, _ = run_pipeline(tmp_path, data, output_name="quarantined_history")
+    assert last[0]["reason"] == "no_available_training_history"
+    from belvo.config import Protocol
+    from belvo.state import Store
+
+    store = Store(tmp_path / "state.db", Protocol.load())
+    assert store.quota()["reserved"] == 0
+    assert all(a["state"] == "cancelled" for a in store.attempts())

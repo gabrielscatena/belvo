@@ -28,6 +28,9 @@ state, configuration and artifact-format version. Decisions reference that ident
 The complete artifact is persisted with the decisions in SQLite and exported under
 `<state-stem>.models/<model_hash>.json`. Publishing is atomic; different contents cannot
 replace an existing artifact. Restoring a model verifies its hash. Refit clears old cells.
+Unsent decisions also track their model/budget basis: corrected history automatically
+refreshes them, and loss of valid training cancels pending debits. Submitted/uncertain
+effects remain protected. Source ordering and decision basis serve different purposes.
 
 Alternatives: Automatically numbering arrivals would legitimize late retries. Blocking
 all repeated content would also reject genuine reappearance. Overwriting one model file

@@ -194,8 +194,11 @@ class Store:
         source_revision=None,
         history_issues=(),
         model_artifact=None,
+        decision_basis=None,
     ):
         selector = selector or baseline
+        if decision_basis is None and model_artifact is not None:
+            decision_basis = model_artifact["model_hash"]
         with self.transaction() as db:
             latest = db.execute("SELECT value FROM meta WHERE key='latest_day'").fetchone()
             if latest and day < latest[0]:
@@ -302,6 +305,10 @@ class Store:
                 elif (
                     old
                     and old["version"] == loan.version
+                    and (
+                        decision_basis is None
+                        or json.loads(old["payload"]).get("decision_basis") == decision_basis
+                    )
                     and json.loads(old["payload"])["status"] not in ("withdrawn", "quarantined")
                     and (
                         not json.loads(old["payload"])["plan"]["amounts"]
@@ -346,6 +353,8 @@ class Store:
                 raise ValueError("Selector attempted quota overbooking")
             db.execute("UPDATE quota SET reserved=reserved+? WHERE id=1", (requested,))
             for row in selected:
+                if decision_basis is not None:
+                    row["decision_basis"] = decision_basis
                 self._save_decision(db, row)
                 for index, (amount, provider) in enumerate(
                     zip(row["plan"]["amounts"], row["plan"]["providers"], strict=True)
