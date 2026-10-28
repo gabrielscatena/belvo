@@ -46,3 +46,12 @@ Local tasks without new project commits; development durations are **N/R**.
 | Latest specific EDA | 11:28:54.445222 | N/R | N/R | [Metadata](reports/eda_belvo/20261028_112854_444227/run_metadata.json): initialization and completion status, no end timestamp. [Results](reports/eda_belvo/20261028_112854_444227/report.md). |
 
 Do not sum runtime and development gaps as independent effort. Record future task starts/ends directly.
+
+## Eight-stage implementation — measured local intervals, 2026-10-28 (UTC-03)
+
+Intervals include implementation and verification; exclude commit/push overhead. These
+are measured work intervals, not estimates inferred from commits.
+
+| Stage | Start | End | Minutes | Context → Action → Result |
+|---|---|---|---:|---|
+| 1 | 14:09:30 | 14:14:28 | 4.97 | Resolve architecture ambiguity → validate case/reviews and specify contracts/ADRs → minimal transactional boundary and explicit assumptions. |
