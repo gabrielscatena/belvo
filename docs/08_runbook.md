@@ -44,3 +44,12 @@ monthly/per-lender margins, calibration, cluster uncertainty, daily capacity and
 tables to a new `reports/evaluation/<run-id>` directory. Published frozen results are in
 `reports/evaluation/frozen_v1`; do not overwrite that checkpoint. No April labels train
 the policy. Results are conditional model estimates; consult the rollout blockers.
+
+```powershell
+python -m belvo.evaluation.benchmark
+```
+
+Persistent input is a **complete portfolio** for all lenders, or for `--client C01`.
+Corrections that omit a previously planned loan cancel its unsent intents. Reservations
+for uncertain attempts remain. Distinct policies require distinct state; backward-date
+replay also requires separate state. Cap-source changes are included in version identities.

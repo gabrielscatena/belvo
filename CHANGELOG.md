@@ -60,3 +60,4 @@ are measured work intervals, not estimates inferred from commits.
 | 4 | 14:17:52 | 14:22:08 | 4.27 | Recover safely → add atomic reservations/outbox, durable simulator and reconciliation → 26 tests pass including unknown delivery, correction and rollback. |
 | 5 | 14:22:13 | 14:26:16 | 4.05 | Compare complete plans → add empirical scoring, support guards and lender-priority quota allocation → 30 tests pass; 4,640 economic decisions generated with 9,076 reserved A units. |
 | 6 | 14:26:16 | 14:38:35 | 12.32 | Test economic claims → replay April, reconcile lenders and stress support/quota → 32 tests pass; results published with calibration error and explicit rollout blockers. |
+| 7 | 14:38:46 | 14:49:28 | 10.70 | Verify operations → test processes, failures and corrected full portfolios; benchmark local engine → 44 tests pass, 8.95s cold / 2.52s warm for 4,640 loans. |

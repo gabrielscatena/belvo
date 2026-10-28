@@ -10,5 +10,5 @@ updated after successful synchronization.
 4. State, reservations and recovery: transactional SQLite, stable intents, simulated executor and reconciliation.
 5. Economic selection: supported empirical plan scoring, shared-quota heuristic, explicit lender constraints and provenance.
 6. Candidate / legacy evaluation: frozen April replay, reconciled lender accounting, calibration, uncertainty and explicitly scoped ceiling; live rollout not approved.
-7. Concurrency, failure and performance: pending.
+7. Concurrency, failure and performance: independent-process contention, recovery and corrections tested; local latency measured on 4,640 loans.
 8. Final delivery: pending.

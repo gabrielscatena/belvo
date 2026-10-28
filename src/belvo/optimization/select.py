@@ -11,10 +11,13 @@ class EconomicSelector:
         self.required = required_today
         self.supported_only = supported_only
         self.report = {}
+        self._options = {}
 
-    def __call__(self, loans: list[Loan], quota: int, protocol):
-        options, selected, loan_map = {}, {}, {loan.loan_id: loan for loan in loans}
-        for loan in sorted(loans, key=lambda x: x.loan_id):
+    def prepare(self, loans, protocol):
+        """Score before locking state; allocate against locked quota in __call__."""
+        for loan in loans:
+            if loan in self._options:
+                continue
             candidates = []
             for plan in plans(
                 loan, protocol.values["amount_fractions"], protocol.values["max_installments"]
@@ -25,6 +28,13 @@ class EconomicSelector:
                 if self.supported_only and plan.amounts and not value["supported"]:
                     continue
                 candidates.append((plan, value))
+            self._options[loan] = candidates
+
+    def __call__(self, loans: list[Loan], quota: int, protocol):
+        self.prepare(loans, protocol)
+        options, selected, loan_map = {}, {}, {loan.loan_id: loan for loan in loans}
+        for loan in sorted(loans, key=lambda x: x.loan_id):
+            candidates = self._options[loan]
             options[loan.loan_id] = candidates
             selected[loan.loan_id] = max(
                 (item for item in candidates if not item[0].a_units),
@@ -70,6 +80,8 @@ class EconomicSelector:
                 "required_today": None if self.required is None else self.required.get(client, 0),
                 "status": "not_evaluated"
                 if self.required is None
+                else "missing_lender_budget"
+                if client not in self.required
                 else "satisfied_expected"
                 if totals[client] >= self.required.get(client, 0)
                 else "unmet_heuristic_constraint",
@@ -97,9 +109,9 @@ class EconomicSelector:
         return decisions, remaining
 
 
-def zero_future_budget(frame, day, protocol):
+def zero_future_budget(frame, day, protocol, clients=None):
     """Full-contract check under explicitly zero future contribution, not a forecast."""
-    clients = sorted(frame.client_id.unique())
+    clients = sorted(frame.client_id.unique() if clients is None else clients)
     known = frame.loc[frame.attempt_date.le(protocol.known_attempt_through(day))].copy()
     known["realized_contribution"] = known.amount_cents / 100 * known.band / 100 * known.status.eq(
         "success"

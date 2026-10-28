@@ -16,11 +16,17 @@ def read_csv(path: Path, required: set[str]) -> list[dict]:
         reader = csv.DictReader(stream)
         if not required.issubset(reader.fieldnames or []):
             raise ValueError(f"Missing required columns in {path.name}: {sorted(required)}")
-        return list(reader)
+        rows = list(reader)
+        for row in rows:
+            if None in row:
+                row["__csv_error"] = "extra_csv_fields"
+                row["__extra_values"] = row.pop(None)
+        return rows
 
 
 def load_day(data: Path, day: str):
-    date.fromisoformat(day)
+    if date.fromisoformat(day).isoformat() != day:
+        raise ValueError("Decision date must use YYYY-MM-DD")
     clients = read_csv(data / "clients.csv", {"client_id", "max_installment_amount"})
     caps = {}
     counts = Counter(r["client_id"] for r in clients)
@@ -44,26 +50,37 @@ def load_day(data: Path, day: str):
     selected = []
     for row in rows:
         try:
-            date.fromisoformat(row["snapshot_date"])
+            if date.fromisoformat(row["snapshot_date"]).isoformat() != row["snapshot_date"]:
+                raise ValueError("Noncanonical date")
         except (ValueError, TypeError):
             selected.append(row)  # preserve unassignable records as quarantine evidence
             continue
         if row["snapshot_date"] == day:
             selected.append(row)
-    return validate(selected, caps, day)
+    cap_sources = defaultdict(list)
+    for row in clients:
+        cap_sources[row["client_id"]].append(row)
+    return validate(selected, caps, day, cap_sources)
 
 
-def validate(rows: list[dict], caps: dict, day: str):
+def validate(rows: list[dict], caps: dict, day: str, cap_sources=None):
     groups = defaultdict(list)
     raw = []
     for index, row in enumerate(rows):
-        version = fingerprint(row)
-        raw.append({"source_index": index, "version": version, "payload": row})
-        groups[row.get("loan_id") or f"__missing_identity_{index}"].append((row, version))
+        context = {
+            "cap_cents": caps.get(row.get("client_id")),
+            "cap_sources": (cap_sources or {}).get(row.get("client_id")),
+        }
+        version = fingerprint({"snapshot": row, "context": context})
+        raw.append({"source_index": index, "version": version, "payload": row, "context": context})
+        key = (0, row["loan_id"]) if row.get("loan_id") else (1, str(index))
+        groups[key].append((row, version))
     valid, rejected = [], []
     for key, entries in sorted(groups.items()):
         row, version = entries[0]
         errors = []
+        if row.get("__csv_error"):
+            errors.append(row["__csv_error"])
         if not row.get("loan_id"):
             errors.append("missing_loan_id")
         if len(entries) > 1:
@@ -95,7 +112,15 @@ def validate(rows: list[dict], caps: dict, day: str):
             )
         else:
             valid.append(
-                Loan(key, row["client_id"], day, balance, caps[row["client_id"]], dpd, version)
+                Loan(
+                    row["loan_id"],
+                    row["client_id"],
+                    day,
+                    balance,
+                    caps[row["client_id"]],
+                    dpd,
+                    version,
+                )
             )
     return valid, rejected, raw
 

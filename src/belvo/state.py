@@ -31,6 +31,10 @@ CREATE TABLE IF NOT EXISTS receipts(
  PRIMARY KEY(batch,source_index));
 CREATE TABLE IF NOT EXISTS decisions(
  loan_id TEXT,day TEXT,version TEXT,payload TEXT NOT NULL,PRIMARY KEY(loan_id,day));
+CREATE TABLE IF NOT EXISTS decision_events(
+ id TEXT PRIMARY KEY,payload TEXT NOT NULL,recorded_at TEXT DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS batches(
+ id TEXT PRIMARY KEY,day TEXT NOT NULL,received_at TEXT DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE IF NOT EXISTS attempts(
  id TEXT PRIMARY KEY,loan_id TEXT,day TEXT,provider TEXT,amount INTEGER CHECK(amount>0),
  state TEXT CHECK(state IN ('ready','sending','unknown','submitted','cancelled')),
@@ -84,6 +88,24 @@ class Store:
         row["free"] = row["total"] - row["reserved"] - row["consumed"]
         return row
 
+    def bind_policy(self, identity):
+        with self.transaction() as db:
+            db.execute("INSERT OR IGNORE INTO meta VALUES('policy',?)", (identity,))
+            if db.execute("SELECT value FROM meta WHERE key='policy'").fetchone()[0] != identity:
+                raise ValueError("Use separate state for a different policy")
+
+    @staticmethod
+    def _save_decision(db, row):
+        payload = json.dumps(row)
+        db.execute(
+            "INSERT OR IGNORE INTO decision_events(id,payload) VALUES(?,?)",
+            (fingerprint(row), payload),
+        )
+        db.execute(
+            "INSERT OR REPLACE INTO decisions VALUES(?,?,?,?)",
+            (row["loan_id"], row["day"], row["version"], payload),
+        )
+
     def _cancel_unsent(self, db, loan_id, day):
         count = db.execute(
             "SELECT count(*) FROM attempts WHERE loan_id=? AND day=? "
@@ -96,10 +118,32 @@ class Store:
         )
         db.execute("UPDATE quota SET reserved=reserved-? WHERE id=1", (count,))
 
-    def commit_day(self, valid, rejected, raw, day, selector=None):
+    def commit_day(self, valid, rejected, raw, day, selector=None, portfolio_clients=None):
         selector = selector or baseline
         with self.transaction() as db:
-            batch = fingerprint(raw)
+            latest = db.execute("SELECT value FROM meta WHERE key='latest_day'").fetchone()
+            if latest and day < latest[0]:
+                raise ValueError("Cannot rewind live state; replay into a separate database")
+            db.execute("INSERT OR REPLACE INTO meta VALUES('latest_day',?)", (day,))
+            batch = fingerprint([day, raw])
+            db.execute("INSERT OR IGNORE INTO batches(id,day) VALUES(?,?)", (batch, day))
+            withdrawals = []
+            if portfolio_clients is not None:
+                present = {loan.loan_id for loan in valid} | {r["loan_id"] for r in rejected}
+                existing = db.execute(
+                    "SELECT payload FROM decisions WHERE day=?", (day,)
+                ).fetchall()
+                for old in existing:
+                    value = json.loads(old["payload"])
+                    if value["client_id"] in portfolio_clients and value["loan_id"] not in present:
+                        self._cancel_unsent(db, value["loan_id"], day)
+                        value = value | {
+                            "status": "withdrawn",
+                            "reason": "absent_from_corrected_full_portfolio",
+                            "plan": {"amounts": [], "providers": []},
+                        }
+                        self._save_decision(db, value)
+                        withdrawals.append(value)
             by_id = {r["loan_id"]: r for r in rejected if r["loan_id"]}
             valid_ids = {loan.loan_id for loan in valid}
             for entry in raw:
@@ -107,7 +151,13 @@ class Store:
                 error = by_id.get(key, {})
                 db.execute(
                     "INSERT OR IGNORE INTO versions VALUES(?,?)",
-                    (entry["version"], json.dumps(entry["payload"], sort_keys=True)),
+                    (
+                        entry["version"],
+                        json.dumps(
+                            {"snapshot": entry["payload"], "context": entry.get("context")},
+                            sort_keys=True,
+                        ),
+                    ),
                 )
                 db.execute(
                     "INSERT OR IGNORE INTO receipts VALUES(?,?,?,?,?)",
@@ -155,7 +205,20 @@ class Store:
                         "reason": "submission_requires_reconciliation",
                     }
                     result.append(value)
-                elif old and old["version"] == loan.version:
+                elif (
+                    old
+                    and old["version"] == loan.version
+                    and json.loads(old["payload"])["status"] not in ("withdrawn", "quarantined")
+                    and (
+                        not json.loads(old["payload"])["plan"]["amounts"]
+                        or db.execute(
+                            "SELECT count(*) FROM attempts WHERE loan_id=? AND day=? "
+                            "AND state='ready'",
+                            (loan.loan_id, day),
+                        ).fetchone()[0]
+                        > 0
+                    )
+                ):
                     result.append(json.loads(old["payload"]))
                 else:
                     self._cancel_unsent(db, loan.loan_id, day)
@@ -184,10 +247,7 @@ class Store:
                 raise ValueError("Selector attempted quota overbooking")
             db.execute("UPDATE quota SET reserved=reserved+? WHERE id=1", (requested,))
             for row in selected:
-                db.execute(
-                    "INSERT OR REPLACE INTO decisions VALUES(?,?,?,?)",
-                    (row["loan_id"], day, row["version"], json.dumps(row)),
-                )
+                self._save_decision(db, row)
                 for index, (amount, provider) in enumerate(
                     zip(row["plan"]["amounts"], row["plan"]["providers"], strict=True)
                 ):
@@ -215,12 +275,9 @@ class Store:
                     }
                 else:
                     self._cancel_unsent(db, row["loan_id"], day)
-                    db.execute(
-                        "INSERT OR REPLACE INTO decisions VALUES(?,?,?,?)",
-                        (row["loan_id"], day, row["version"], json.dumps(row)),
-                    )
+                    self._save_decision(db, row)
                 reported_rejections.append(row)
-            return result + selected + reported_rejections
+            return result + selected + reported_rejections + withdrawals
 
     def claim(self, day):
         with self.transaction() as db:
