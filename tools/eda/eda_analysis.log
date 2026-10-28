@@ -1,0 +1,36 @@
+2025-07-01 09:35:51,371 - __main__ - INFO - Output directory: reports
+2025-07-01 09:35:51,371 - __main__ - INFO - Loading dataset from: sample_dataset.csv
+2025-07-01 09:35:51,405 - __main__ - INFO - Successfully loaded CSV with utf-8 encoding
+2025-07-01 09:35:51,406 - __main__ - INFO - Dataset shape: (100, 12)
+2025-07-01 09:35:51,412 - __main__ - INFO - Memory usage: 0.06 MB
+2025-07-01 09:35:51,412 - __main__ - INFO - Performing basic EDA...
+2025-07-01 09:35:51,450 - __main__ - INFO - Basic EDA completed. Found 2 numeric, 10 categorical, and 0 datetime columns
+2025-07-01 09:35:51,451 - __main__ - INFO - Analyzing data quality issues...
+2025-07-01 09:35:51,480 - __main__ - INFO - Data quality issues addressed: Converted purchase_amount to numeric (mixed types detected)
+2025-07-01 09:35:51,480 - __main__ - INFO - Outliers detected in columns: ['age', 'purchase_amount', 'score']
+2025-07-01 09:35:51,481 - __main__ - INFO - Generating ydata-profiling report...
+2025-07-01 09:35:57,932 - __main__ - INFO - YData profiling report saved to: reports\ydata_profiling_report.html
+2025-07-01 09:35:57,934 - __main__ - INFO - Creating summary report...
+2025-07-01 09:35:57,935 - __main__ - INFO - Summary report saved to: reports\summary_report.txt
+2025-07-01 09:35:57,936 - __main__ - INFO - === ANALYSIS COMPLETE ===
+2025-07-01 09:35:57,937 - __main__ - INFO - Generated 2 reports:
+2025-07-01 09:35:57,938 - __main__ - INFO -   - reports\ydata_profiling_report.html
+2025-07-01 09:35:57,938 - __main__ - INFO -   - reports\summary_report.txt
+2025-07-02 08:54:21,701 - __main__ - INFO - Output directory: reports
+2025-07-02 08:54:21,701 - __main__ - INFO - Loading dataset from: sample_dataset.csv
+2025-07-02 08:54:21,715 - __main__ - INFO - Successfully loaded CSV with utf-8 encoding
+2025-07-02 08:54:21,716 - __main__ - INFO - Dataset shape: (100, 14)
+2025-07-02 08:54:21,720 - __main__ - INFO - Memory usage: 0.08 MB
+2025-07-02 08:54:21,720 - __main__ - INFO - Performing basic EDA...
+2025-07-02 08:54:21,763 - __main__ - INFO - Basic EDA completed. Found 2 numeric, 12 categorical, and 0 datetime columns
+2025-07-02 08:54:21,763 - __main__ - INFO - Analyzing data quality issues...
+2025-07-02 08:54:21,784 - __main__ - INFO - Data quality issues addressed: Converted income to numeric (mixed types detected), Converted product_rating to numeric (mixed types detected), Converted purchase_amount to numeric (mixed types detected)
+2025-07-02 08:54:21,784 - __main__ - INFO - Outliers detected in columns: ['age', 'income', 'purchase_amount', 'score']
+2025-07-02 08:54:21,784 - __main__ - INFO - Generating ydata-profiling report...
+2025-07-02 08:54:30,083 - __main__ - INFO - YData profiling report saved to: reports\ydata_profiling_report.html
+2025-07-02 08:54:30,085 - __main__ - INFO - Creating summary report...
+2025-07-02 08:54:30,086 - __main__ - INFO - Summary report saved to: reports\summary_report.txt
+2025-07-02 08:54:30,086 - __main__ - INFO - === ANALYSIS COMPLETE ===
+2025-07-02 08:54:30,088 - __main__ - INFO - Generated 2 reports:
+2025-07-02 08:54:30,088 - __main__ - INFO -   - reports\ydata_profiling_report.html
+2025-07-02 08:54:30,088 - __main__ - INFO -   - reports\summary_report.txt

@@ -1,0 +1,40 @@
+=== COMPREHENSIVE DATA ANALYSIS SUMMARY ===
+
+DATASET OVERVIEW:
+- Shape: (100, 14)
+- Memory Usage: 0.08 MB
+- Duplicated Rows: 0
+
+COLUMN INFORMATION:
+- Numeric Columns (2): age, score
+- Categorical Columns (12): customer_id, income, registration_date, category, product_rating, email, purchase_amount, country, phone_number, status, event_time_iso, event_time_eu
+- Datetime Columns (0): 
+
+MISSING VALUES:
+- age: 8.00%
+- income: 5.00%
+- registration_date: 5.00%
+- category: 7.00%
+- product_rating: 6.00%
+- email: 5.00%
+- purchase_amount: 10.00%
+- country: 6.00%
+- phone_number: 6.00%
+- status: 20.00%
+- score: 5.00%
+- event_time_iso: 16.00%
+- event_time_eu: 15.00%
+
+HIGH CARDINALITY WARNINGS:
+- customer_id: 95 unique values (consider reviewing)
+- income: 95 unique values (consider reviewing)
+- registration_date: 92 unique values (consider reviewing)
+- category: 11 unique values (consider reviewing)
+- product_rating: 13 unique values (consider reviewing)
+- email: 95 unique values (consider reviewing)
+- purchase_amount: 90 unique values (consider reviewing)
+- country: 13 unique values (consider reviewing)
+- phone_number: 88 unique values (consider reviewing)
+- status: 15 unique values (consider reviewing)
+- event_time_iso: 82 unique values (consider reviewing)
+- event_time_eu: 77 unique values (consider reviewing)
