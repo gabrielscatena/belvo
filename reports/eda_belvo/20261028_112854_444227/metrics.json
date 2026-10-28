@@ -1,0 +1,17 @@
+{
+  "nonzero_adjacent_residuals": 0,
+  "snapshot_gaps": 1922,
+  "attempt_start": "2026-01-01",
+  "attempt_end": "2026-04-30",
+  "sample_commission_revenue": "902448.9620",
+  "sample_recorded_fees": "427295.0000",
+  "sample_usage_margin": "475153.9620",
+  "sample_observed_contribution": "788060.9620",
+  "sample_a_attempts": 312907,
+  "sample_b_attempts": 57194,
+  "nonpositive_usage_margin_lenders": 3,
+  "weighted_a_utilization_fraction": 0.4693605,
+  "weighted_observed_commitment_coverage": "1820914.4300",
+  "realized_full_window_margin": null,
+  "may_june_forecast": null
+}

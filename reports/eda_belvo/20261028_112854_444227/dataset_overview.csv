@@ -1,0 +1,4 @@
+﻿dataset,rows,columns,duplicate_group_rows,blank_cells
+clients,12,2,0,0
+loan_snapshots,561659,9,0,0
+payment_attempts,370101,9,0,0

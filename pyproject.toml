@@ -21,3 +21,5 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
+# Upstream code is updated through git subtree; lint project-owned code here.
+extend-exclude = ["tools/eda"]

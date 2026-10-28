@@ -1,0 +1,3 @@
+﻿scope,attempt_start,attempt_end,attempts,a_attempts,b_attempts,commission_revenue,recorded_fees,usage_margin,observed_contribution,realized_full_window_margin
+observed_loan_sample,2026-01-01,2026-04-30,370101,312907,57194,902448.9620,427295.0000,475153.9620,788060.9620,
+weighted_full_book_estimate,2026-01-01,2026-04-30,5551515,4693605,857910,13536734.4300,6409425.0000,7127309.4300,11820914.4300,

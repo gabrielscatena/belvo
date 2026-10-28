@@ -1,0 +1,20 @@
+=== COMPREHENSIVE DATA ANALYSIS SUMMARY ===
+
+DATASET OVERVIEW:
+- Shape: (561659, 9)
+- Memory Usage: 166.79 MB
+- Duplicated Rows: 0
+
+COLUMN INFORMATION:
+- Numeric Columns (4): outstanding_balance, days_past_due, original_amount, customer_tenure_months
+- Categorical Columns (5): snapshot_date, loan_id, client_id, payroll_cycle, debtor_bank
+- Datetime Columns (0): 
+
+MISSING VALUES:
+
+HIGH CARDINALITY WARNINGS:
+- snapshot_date: 120 unique values (consider reviewing)
+- loan_id: 10714 unique values (consider reviewing)
+- client_id: 12 unique values (consider reviewing)
+- payroll_cycle: 3 unique values (consider reviewing)
+- debtor_bank: 4 unique values (consider reviewing)

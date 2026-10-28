@@ -1,0 +1,16 @@
+=== COMPREHENSIVE DATA ANALYSIS SUMMARY ===
+
+DATASET OVERVIEW:
+- Shape: (12, 2)
+- Memory Usage: 0.00 MB
+- Duplicated Rows: 0
+
+COLUMN INFORMATION:
+- Numeric Columns (1): max_installment_amount
+- Categorical Columns (1): client_id
+- Datetime Columns (0): 
+
+MISSING VALUES:
+
+HIGH CARDINALITY WARNINGS:
+- client_id: 12 unique values (consider reviewing)

@@ -1,0 +1,7 @@
+# CSV profiling only, using Python 3.12 in .venv-eda.
+# Evidently and the YData SDK are intentionally not needed for this workflow.
+numpy==2.1.3
+pandas==2.3.0
+ydata-profiling==4.16.1
+# This profiling release imports pkg_resources (provided by setuptools 80.x).
+setuptools==80.9.0

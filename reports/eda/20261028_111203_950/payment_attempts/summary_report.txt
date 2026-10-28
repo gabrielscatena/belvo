@@ -1,0 +1,20 @@
+=== COMPREHENSIVE DATA ANALYSIS SUMMARY ===
+
+DATASET OVERVIEW:
+- Shape: (370101, 9)
+- Memory Usage: 110.13 MB
+- Duplicated Rows: 0
+
+COLUMN INFORMATION:
+- Numeric Columns (4): installment_index, installment_count, amount, fee
+- Categorical Columns (5): attempt_id, loan_id, attempt_date, provider, status
+- Datetime Columns (0): 
+
+MISSING VALUES:
+
+HIGH CARDINALITY WARNINGS:
+- attempt_id: 370101 unique values (consider reviewing)
+- loan_id: 9639 unique values (consider reviewing)
+- attempt_date: 120 unique values (consider reviewing)
+- provider: 2 unique values (consider reviewing)
+- status: 2 unique values (consider reviewing)

@@ -16,6 +16,8 @@ htmlcov/
 
 # Environments / credentials
 .venv/
+.venv-eda/
+.cache/uv/
 venv/
 .env
 .env.*
