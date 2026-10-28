@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Run the challenge-specific EDA without installing the project package."""
 
 import sys

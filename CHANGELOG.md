@@ -75,3 +75,10 @@ disclosed in the evaluation protocol; these replays are not independent experime
 Delivery portability follow-up: mark PDF files as binary so Git cannot translate their
 line endings on checkout. The committed PDF matches the rendered original byte-for-byte
 and has three readable pages. No engine or economic result changed.
+
+## CI portability fix
+
+Linux Ruff reported EXE001 because `scripts/eda_belvo.py` had a shebang but Git mode
+100644. Remove the unnecessary shebang: documented usage already invokes Python
+explicitly. Ruff, the EDA CLI help command and all 53 tests pass locally. The Linux
+workflow is checked separately after pushing; Windows lint alone is not CI evidence.
