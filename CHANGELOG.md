@@ -71,3 +71,7 @@ fenced late simulated sends during reconciliation. Full model/lender-table repro
 and daily diagnosis reconciliation show unchanged published economic totals. Model
 hyperparameters were not retuned. Temporal holdout reuse and prior all-month EDA are
 disclosed in the evaluation protocol; these replays are not independent experiments.
+
+Delivery portability follow-up: mark PDF files as binary so Git cannot translate their
+line endings on checkout. The committed PDF matches the rendered original byte-for-byte
+and has three readable pages. No engine or economic result changed.
