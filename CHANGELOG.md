@@ -57,3 +57,4 @@ are measured work intervals, not estimates inferred from commits.
 | 1 | 14:09:30 | 14:14:28 | 4.97 | Resolve architecture ambiguity → validate case/reviews and specify contracts/ADRs → minimal transactional boundary and explicit assumptions. |
 | 2 | 14:14:37 | 14:15:59 | 1.37 | Prevent evaluation leakage → freeze temporal/economic protocol and boundary tests → 14 tests pass, lender allocation fixed before test. |
 | 3 | 14:16:09 | 14:17:42 | 1.55 | Exercise daily flow → implement cent-exact plans/quarantine/export → 18 tests pass; April 1 produces 4,640 unique loan decisions, no invalid records. |
+| 4 | 14:17:52 | 14:22:08 | 4.27 | Recover safely → add atomic reservations/outbox, durable simulator and reconciliation → 26 tests pass including unknown delivery, correction and rollback. |

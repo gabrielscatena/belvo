@@ -15,3 +15,13 @@ missing identities are explicit quarantined source records. Do not reuse an outp
 `--a-capacity` supplies available units to the standalone feasibility demonstration; it
 does not infer remaining quota from a real account. Persistent operation is a separate
 command added with the transactional state milestone. No real debits are submitted.
+
+```powershell
+python -m belvo.pipelines.persistent --date 2026-04-01 --execute
+python -m belvo.pipelines.persistent --date 2026-04-01 --reconcile --execute
+```
+
+These commands use a durable **simulated** provider, not an API. On first initialization,
+historical A submissions before the requested day seed consumed capacity. Existing state
+is never reseeded. Reuse the same state for subsequent days/retries. A new experiment needs
+a new `--state` and `--provider-state`; never delete live state to clear reservations.
