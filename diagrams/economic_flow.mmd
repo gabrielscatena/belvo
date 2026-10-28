@@ -1,2 +1,52 @@
-flowchart LR
-    A["Economic flow: TODO"] --> B["Detail"]
+flowchart TD
+    subgraph DEC["1. Daily decision optimization"]
+        INPUT["Daily portfolio and available history"]
+        PLANS["Generate feasible loan-level plans, including no-attempt<br/>Each installment <= lender cap<br/>Sum of installments <= outstanding balance"]
+        EXPECTED["Estimate expected plan revenue<br/>Condition installment success probabilities<br/>on loan state and the full plan"]
+        VALUE["Expected incremental plan value<br/>Expected commission - selected provider cash costs<br/>- future opportunity cost of A capacity"]
+        OPT["Select plans across the portfolio<br/>Respect available A capacity<br/>Require positive expected full-window margin<br/>per lender, including allocated A upfront cost"]
+
+        INPUT --> PLANS --> EXPECTED --> VALUE --> OPT
+    end
+
+    subgraph CAP["2. Provider A commitment and capacity"]
+        PREPAID["Upfront commitment: 10,000,000 units x 1.0<br/>Unused units expire at the end of the 6-month window"]
+        STATE["Available prepaid capacity and expiry<br/>Future demand forecast"]
+        OC["Estimate future opportunity cost<br/>Avoid duplicating scarcity costs<br/>already represented in optimization"]
+        LEDGER["Record capacity consumption idempotently<br/>One unit per submitted A transaction<br/>Regardless of success or failure"]
+
+        PREPAID --> STATE --> OC
+        LEDGER -.->|"Update capacity for subsequent decisions"| STATE
+    end
+
+    subgraph EXEC["3. Collection execution"]
+        ACTION{"Attempt today?"}
+        SUBMIT["Submit all selected installments on the same day<br/>Reuse transaction identity for duplicate submissions"]
+        OUTCOME["Receive outcomes the next day"]
+        REVENUE["Realized commission<br/>Success: recovered amount x DPD commission rate<br/>Failure: zero<br/>Use DPD on the attempt date"]
+        SKIP["Record no-attempt decision"]
+        HISTORY["Update decision and payment history"]
+
+        ACTION -->|Yes| SUBMIT --> OUTCOME --> REVENUE
+        ACTION -->|No| SKIP --> HISTORY
+        REVENUE --> HISTORY
+    end
+
+    subgraph FIN["4. Realized financial evaluation"]
+        AGG["Aggregate realized commission and provider usage<br/>By lender and full contract window<br/>Reconcile transactions without duplicate counting"]
+        MARGIN["Realized full-window net margin<br/>Total commission - full A upfront payment<br/>- 2.0 x all B attempts"]
+        REPORT["Report realized margin by lender and overall<br/>Apply a documented allocation of A upfront cost<br/>Reconcile totals and flag non-positive lender margins"]
+
+        AGG --> MARGIN --> REPORT
+    end
+
+    OC --> VALUE
+    STATE --> OPT
+    OPT --> ACTION
+
+    SUBMIT -->|"A transactions consume prepaid units"| LEDGER
+    SUBMIT -->|"Count A and B attempts, including failures"| AGG
+    REVENUE --> AGG
+    PREPAID --> MARGIN
+
+    HISTORY -.->|"Next daily cycle"| INPUT
