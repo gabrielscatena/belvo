@@ -1,2 +1,37 @@
-flowchart LR
-    A["Entity relationship model: TODO"] --> B["Detail"]
+erDiagram
+    direction LR
+
+    CLIENTS {
+        string client_id PK
+        decimal max_installment_amount
+    }
+
+    LOANS {
+        string loan_id PK
+        string client_id FK
+    }
+
+    LOAN_SNAPSHOTS {
+        string loan_id PK, FK
+        date snapshot_date PK
+        string client_id FK
+        decimal outstanding_balance
+        int days_past_due
+    }
+
+    PAYMENT_ATTEMPTS {
+        string attempt_id PK
+        string loan_id FK
+        date attempt_date
+        int installment_index
+        int installment_count
+        decimal amount
+        string provider
+        string status
+        decimal fee
+    }
+
+    CLIENTS ||--o{ LOANS : owns
+    CLIENTS ||--o{ LOAN_SNAPSHOTS : has
+    LOANS ||--o{ LOAN_SNAPSHOTS : has_snapshots
+    LOANS ||--o{ PAYMENT_ATTEMPTS : has_attempts
