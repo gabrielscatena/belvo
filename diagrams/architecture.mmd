@@ -1,0 +1,12 @@
+flowchart LR
+    INPUT["Full lender portfolio on D"] --> VALIDATE["Validate and preserve versions"]
+    VALIDATE -->|Invalid| QUARANTINE["Flag and quarantine"]
+    QUARANTINE -.->|Corrected input| VALIDATE
+    VALIDATE -->|Valid| PLAN["Generate and score complete plans"]
+    HISTORY["Available history through cutoff"] --> PLAN
+    PLAN --> TX["Atomic selection, reservation and outbox"]
+    STATE[("SQLite: versions, decisions, quota, intents")] <--> TX
+    TX --> EXEC["Simulated executor with stable identities"]
+    EXEC -->|Confirmed or uncertain delivery| RECON["Reconcile and retain unresolved reservations"]
+    RECON --> STATE
+    STATE --> REPORT["Daily lender and total reporting"]

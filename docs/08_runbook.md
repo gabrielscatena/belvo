@@ -4,7 +4,7 @@ Use Python 3.12 (general EDA dependencies do not support Python 3.14). From repo
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[dev,data]"
+.\.venv\Scripts\python.exe -m pip install -r conf/requirements-mvp.lock -e ".[mvp]"
 .\.venv\Scripts\python.exe -m belvo.pipelines.daily --date 2026-04-01
 .\.venv\Scripts\python.exe -m pytest -q
 ```

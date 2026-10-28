@@ -1,0 +1,33 @@
+{
+  "recorded_at": "2026-10-28T15:00:42.476973-03:00",
+  "python": "3.12.14",
+  "install": "fresh .venv-mvp-check, editable [mvp], pytest 9.2.0, ruff 0.17.3",
+  "tests_passed": 53,
+  "ruff": "passed",
+  "full_temporal_replay": "completed",
+  "exact_summary_matches": {
+    "legacy_observed_april_margin": 80758.24293093923,
+    "legacy_estimated_april_margin": 107146.78343329723,
+    "candidate_estimated_april_margin": 1228967.1597942705,
+    "candidate_conservative_april_margin": 713158.0660260448,
+    "relaxed_model_april_ceiling": 1257322.9791312471,
+    "remaining_a": 157146
+  },
+  "model_file_identical": true,
+  "lender_table_identical": true,
+  "pending_b_fee_diagnostic_changes": [],
+  "note": "Engineering correction after initial holdout evaluation; no model hyperparameter or fitted response changed. Daily lender diagnostics recomputed with known pending B fees.",
+  "final_verified_at": "2026-10-28T15:09:55.571548-03:00",
+  "dependency_compatibility": "14 installed packages checked, all compatible",
+  "markdown_local_links": "passed",
+  "design_pdf_pages": 3,
+  "design_pdf_visual_review": "all pages passed",
+  "late_sender_fencing_test": "passed",
+  "provider_registry_replacement_test": "passed",
+  "final_daily_command": {
+    "loans": 4640,
+    "a_reserved": 9076,
+    "free_a": 424032
+  },
+  "final_source_sha256": "d109b84712f270d5d18e6083f6537008b5602ce0891d9a73f6d30cb4a0930f00"
+}

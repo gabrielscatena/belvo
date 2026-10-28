@@ -28,6 +28,7 @@ No separate shadow-price penalty is added. Future online allocation can still be
 Lender requirement: `past_known_contribution + today_conservative_contribution +
 pending_expected + future_expected - fixed_A_share > 0`. The initial CLI check sets pending
 and future contribution to zero as an explicit stringent scenario, not as a forecast.
+Known fees of pending B submissions are charged even when pending recovery is assumed zero.
 It reports unmet constraints rather than claiming all lenders profitable or concealing fixed
 cost. A production recommendation requires a supported horizon forecast and positive lender
 results under its uncertainty criteria. No-attempt cannot cure an already negative contract.
@@ -35,3 +36,7 @@ results under its uncertainty criteria. No-attempt cannot cure an already negati
 Alternatives: Rules alone cannot estimate economic outcomes; flexible supervised models
 need stronger validation; exact integer optimization cannot fix causal identification.
 More features, mixed-provider plans and calibrated sequential models are future work.
+
+Evaluation update: candidate volume would exhaust A under the tested May-June continuation
+scenarios. Legacy underuse does not establish ample capacity under a new policy. Zero
+opportunity cost remains a disclosed prototype baseline; future pacing is not validated.

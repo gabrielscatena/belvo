@@ -4,6 +4,10 @@
 
 **Stage:** Domain discovery / proposed process (not a verified production architecture)
 
+Implementation update: [architecture](05_architecture.md), [ADRs](adrs/README.md),
+[protocol](07_evaluation_protocol.md) and [operational evidence](10_validation.md)
+now instantiate a local prototype; this working business specification remains broader.
+
 **Primary diagram:** [`diagrams/business_flow.mmd`](../diagrams/business_flow.mmd)
 
 ## 1. Purpose and business boundary

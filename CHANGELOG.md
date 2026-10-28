@@ -30,15 +30,16 @@ Reproduce the committed chronology with:
 git log --first-parent --reverse --date=iso-strict --format="%h %cI %s"
 ```
 
-## Unreleased — working-tree tasks and execution evidence
+## EDA implementation and execution evidence
 
-Local tasks without new project commits; development durations are **N/R**.
+These tasks are now committed (through `e0dd7dc`). Active development durations were
+not recorded and remain **N/R**.
 
 | Task: Context → Action → Result | Development start | Development end | Development minutes | Evidence |
 |---|---|---|---:|---|
 | Resolve compatibility → isolate Python 3.12/add guarded runner → profiling works. | N/R | N/R | N/R | `conf/requirements-eda.txt`, `scripts/run_eda.ps1` |
 | Validate assumptions → implement specific EDA/tests → 12 project tests pass; zero failed real-data checks. | N/R | N/R | N/R | `scripts/eda_belvo.py`, `src/belvo/data/eda.py`, `tests/test_eda_belvo.py` |
-| Explain work → consolidate rationale/timeline → README and changelog. | N/R | N/R | N/R | Current documentation changes. |
+| Explain work → consolidate rationale/timeline → README and changelog. | N/R | N/R | N/R | Historical documentation milestone, now committed. |
 
 | Executed analysis | Recorded start | Recorded end | Logged duration | Source / interpretation |
 |---|---|---|---:|---|
@@ -47,17 +48,26 @@ Local tasks without new project commits; development durations are **N/R**.
 
 Do not sum runtime and development gaps as independent effort. Record future task starts/ends directly.
 
-## Eight-stage implementation — measured local intervals, 2026-10-28 (UTC-03)
+## Eight-stage implementation — elapsed checkpoints, 2026-10-28 (UTC-03)
 
-Intervals include implementation and verification; exclude commit/push overhead. These
-are measured work intervals, not estimates inferred from commits.
+Stages 1-7 end at the actual first-parent commit timestamp; subsequent stages start at
+that previous checkpoint. Stage 1 starts at the recorded inspection time. These intervals
+include tool execution, possible pauses and synchronization overhead; **they are not
+measured active development effort**. Stage 8 ends at the recorded pre-commit verification.
 
-| Stage | Start | End | Minutes | Context → Action → Result |
+| Stage | Start checkpoint | End checkpoint | Elapsed minutes | Context → Action → Result |
 |---|---|---|---:|---|
-| 1 | 14:09:30 | 14:14:28 | 4.97 | Resolve architecture ambiguity → validate case/reviews and specify contracts/ADRs → minimal transactional boundary and explicit assumptions. |
-| 2 | 14:14:37 | 14:15:59 | 1.37 | Prevent evaluation leakage → freeze temporal/economic protocol and boundary tests → 14 tests pass, lender allocation fixed before test. |
-| 3 | 14:16:09 | 14:17:42 | 1.55 | Exercise daily flow → implement cent-exact plans/quarantine/export → 18 tests pass; April 1 produces 4,640 unique loan decisions, no invalid records. |
-| 4 | 14:17:52 | 14:22:08 | 4.27 | Recover safely → add atomic reservations/outbox, durable simulator and reconciliation → 26 tests pass including unknown delivery, correction and rollback. |
-| 5 | 14:22:13 | 14:26:16 | 4.05 | Compare complete plans → add empirical scoring, support guards and lender-priority quota allocation → 30 tests pass; 4,640 economic decisions generated with 9,076 reserved A units. |
-| 6 | 14:26:16 | 14:38:35 | 12.32 | Test economic claims → replay April, reconcile lenders and stress support/quota → 32 tests pass; results published with calibration error and explicit rollout blockers. |
-| 7 | 14:38:46 | 14:49:28 | 10.70 | Verify operations → test processes, failures and corrected full portfolios; benchmark local engine → 44 tests pass, 8.95s cold / 2.52s warm for 4,640 loans. |
+| 1 | 14:09:30 | 14:14:38 | 5.13 | Resolve ambiguity → validate case/reviews, specify contracts/ADRs → explicit boundary (`89195e2`). |
+| 2 | 14:14:38 | 14:16:10 | 1.53 | Prevent leakage → freeze temporal/economic protocol → 14 tests pass (`d42f27a`). |
+| 3 | 14:16:10 | 14:18:01 | 1.85 | Exercise daily flow → implement validation/plans/export → 18 tests pass; 4,640 unique decisions (`5abb78a`). |
+| 4 | 14:18:01 | 14:22:05 | 4.07 | Recover safely → add reservations/outbox/simulator → 26 tests pass (`faefccb`). |
+| 5 | 14:22:05 | 14:26:59 | 4.90 | Compare plans → add supported scoring/lender constraints → 30 tests pass (`869121a`). |
+| 6 | 14:26:59 | 14:39:40 | 12.68 | Challenge claims → replay April and audit money/uncertainty → 32 tests pass, explicit blockers (`eaa2f20`). |
+| 7 | 14:39:40 | 14:49:42 | 10.03 | Verify operations → exercise processes/failures/corrections and benchmark → 44 tests pass, 8.95s cold / 2.52s warm (`08939ba`). |
+| 8 | 14:49:42 | 15:09:56 | 20.23 | Consolidate delivery → finalize 3-page design, pinned environment, README and recovery review → 53 tests pass; economic totals reproduce exactly, PDF/links verified. |
+
+Final review also corrected known pending-B fees in the conservative lender check and
+fenced late simulated sends during reconciliation. Full model/lender-table reproduction
+and daily diagnosis reconciliation show unchanged published economic totals. Model
+hyperparameters were not retuned. Temporal holdout reuse and prior all-month EDA are
+disclosed in the evaluation protocol; these replays are not independent experiments.

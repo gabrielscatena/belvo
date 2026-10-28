@@ -5,7 +5,7 @@ import pandas as pd
 from belvo.config import Protocol
 from belvo.domain import Loan, Plan
 from belvo.models.empirical import EmpiricalModel, fit_for_day
-from belvo.optimization.select import EconomicSelector
+from belvo.optimization.select import EconomicSelector, zero_future_budget
 
 
 def history():
@@ -85,3 +85,31 @@ def test_model_serialization_uses_json_native_scalars(tmp_path):
     target = tmp_path / "model.json"
     model.save(target)
     assert json.loads(target.read_text())["fitted_through"] == "2026-02-27"
+
+
+def test_pending_b_cost_is_known_even_when_its_outcome_is_unavailable():
+    p = Protocol.load()
+    frame = pd.DataFrame(
+        [
+            {
+                "client_id": "C1",
+                "attempt_date": "2026-03-30",
+                "amount_cents": 10000,
+                "band": 15,
+                "status": "success",
+                "provider": "A",
+            },
+            {
+                "client_id": "C1",
+                "attempt_date": "2026-03-31",
+                "amount_cents": 10000,
+                "band": 15,
+                "status": "success",
+                "provider": "B",
+            },
+        ]
+    )
+    budget = zero_future_budget(frame, "2026-04-01", p, clients=["C1", "C2"])
+    assert abs(budget["C1"] - (float(p.sample_upfront) / 2 - 15 + 2 + 0.0001)) < 1e-8
+    frame.loc[1, "status"] = "failed"
+    assert budget == zero_future_budget(frame, "2026-04-01", p, clients=["C1", "C2"])

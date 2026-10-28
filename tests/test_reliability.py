@@ -140,7 +140,7 @@ def test_decision_versions_and_receipts_are_auditable(root):
         assert db.execute("SELECT received_at FROM batches").fetchone()[0]
 
 
-def test_proven_non_submission_can_retry_same_identity(root):
+def test_proven_non_submission_retries_with_a_new_generation(root):
     store = Store(root / "state.db", Protocol.load(), capacity=1)
     provider = SimulatedProvider(root / "provider.db")
     store.commit_day([loan()], [], [], "2026-04-01")
@@ -150,8 +150,24 @@ def test_proven_non_submission_can_retry_same_identity(root):
     assert store.quota()["free"] == 1
     store.commit_day([loan()], [], [], "2026-04-01")
     execute(store, provider, "2026-04-01")
-    assert len(store.attempts()) == 1 and store.attempts()[0]["id"] == identity
+    assert len(store.attempts()) == 2
+    submitted = [a for a in store.attempts() if a["state"] == "submitted"]
+    assert len(submitted) == 1 and submitted[0]["id"] != identity
     assert store.quota()["consumed"] == 1
+
+
+def test_reconciliation_fences_a_sender_that_has_not_reached_provider(root):
+    store = Store(root / "state.db", Protocol.load(), capacity=1)
+    provider = SimulatedProvider(root / "provider.db")
+    store.commit_day([loan()], [], [], "2026-04-01")
+    delayed = store.claim("2026-04-01")
+    reconcile(store, provider)
+    assert store.quota()["free"] == 1
+    store.commit_day([loan(2)], [], [], "2026-04-01")
+    execute(store, provider, "2026-04-01")
+    assert provider.submit(delayed) is False
+    assert not provider.exists(delayed["id"])
+    assert store.quota()["consumed"] == 1 and store.quota()["free"] == 0
 
 
 def test_cap_correction_automatically_revalidates_same_snapshot(root):
@@ -171,3 +187,14 @@ def test_cap_correction_automatically_revalidates_same_snapshot(root):
     decisions = store.commit_day(valid, rejected, raw, "2026-04-01")
     assert decisions[0]["status"] == "attempt"
     assert max(decisions[0]["plan"]["amounts"]) <= 200
+
+
+def test_replaced_provider_registry_cannot_release_unknown_capacity(root):
+    store = Store(root / "state.db", Protocol.load(), capacity=1)
+    original = SimulatedProvider(root / "original.db")
+    store.commit_day([loan()], [], [], "2026-04-01")
+    execute(store, original, "2026-04-01", "timeout_after")
+    replacement = SimulatedProvider(root / "empty_replacement.db")
+    with pytest.raises(ValueError, match="registry was replaced"):
+        reconcile(store, replacement)
+    assert store.quota()["reserved"] == 1

@@ -14,7 +14,15 @@ Balance/DPD and lender cap for D are known on receipt. Historical data is left-t
 
 Training labels must also be available at the fitting cutoff: fitting for March 1 uses
 attempts through February 27. The frozen final model can refit through March 30 for April 1,
-after validation choices are fixed. No April labels enter selection or fitting.
+after validation choices are fixed. No April labels train the model or tune hyperparameters;
+already available prior-April outcomes can enter the daily lender budget at D-2.
+
+Audit disclosure: earlier EDA inspected all months, so this is a temporal holdout, not a
+blind preregistered experiment. Engineering regression replays were repeated. Final review
+corrected known pending-B fees in the lender check; no probability model was retuned,
+and published monetary totals and daily unmet-constraint counts are unchanged. The simulator
+was also hardened against reconciliation racing a late sender. These are disclosed fixes,
+not additional independent test evidence.
 
 Observed attempt/success counts: January 96,181/862; February 86,768/829;
 March 93,380/895; April 93,772/856. These support a temporal evaluation but sparse

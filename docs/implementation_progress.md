@@ -1,7 +1,7 @@
 # Implementation milestones
 
-Each stage is validated, committed and pushed separately. CHANGELOG records measured
-implementation intervals, excluding commit/push overhead. The on-screen checklist is
+Each stage is validated, committed and pushed separately. CHANGELOG records elapsed
+checkpoints, not measured active effort. The on-screen checklist is
 updated after successful synchronization.
 
 1. Architecture and ADRs: contracts formalized; Python/SQLite decision justified.
@@ -11,4 +11,4 @@ updated after successful synchronization.
 5. Economic selection: supported empirical plan scoring, shared-quota heuristic, explicit lender constraints and provenance.
 6. Candidate / legacy evaluation: frozen April replay, reconciled lender accounting, calibration, uncertainty and explicitly scoped ceiling; live rollout not approved.
 7. Concurrency, failure and performance: independent-process contention, recovery and corrections tested; local latency measured on 4,640 loans.
-8. Final delivery: pending.
+8. Final delivery: three-page design PDF/source, README/results/runbook, pinned clean environment and final regression evidence. Prototype complete; live deployment remains unapproved.

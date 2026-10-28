@@ -149,5 +149,12 @@ def fit_for_day(frame, protocol, day):
         if day <= protocol.values["validation_end"]
         else protocol.values["test_start"]
     )
-    cutoff = min(protocol.known_attempt_through(day), protocol.known_attempt_through(fit_start))
+    fit_end = (
+        protocol.values["train_end"]
+        if day <= protocol.values["validation_end"]
+        else protocol.values["validation_end"]
+    )
+    cutoff = min(
+        protocol.known_attempt_through(day), protocol.known_attempt_through(fit_start), fit_end
+    )
     return EmpiricalModel(protocol).fit(frame, cutoff)

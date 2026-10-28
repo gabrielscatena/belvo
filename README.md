@@ -1,71 +1,72 @@
 # Smart Collections Engine
 
-Senior Applied Data Scientist take-home: maximize absolute collection margin while respecting installment caps, Provider A's prepaid capacity and expiry, and profitability for every lender.
+Senior Applied Data Scientist take-home. A local decision engine maximizes estimated absolute collection margin under installment caps and shared prepaid capacity, with explicit lender profitability diagnostics.
 
-**Status:** working specifications and EDA implemented; decision-policy prototype, architecture and final evaluation pending.
+**Delivery:** working prototype, offline evaluation, operational tests and a [three-page design](output/pdf/design_document.pdf) ([editable source](docs/design_document.md)). **Live rollout is not approved:** estimated gains are observational, C11 fails full-cost Jan-Apr coverage, and May-June demand remains unresolved.
 
-## Approach and rationale — Context, Action, Result
+## Run the prototype
 
-| Step | Context | Action | Result |
-|---|---|---|---|
-| 1. Understand | Business constraints precede model selection. | Read the challenge and package README. | Identified decisions, delayed outcomes and sample/full-book boundaries. |
-| 2. Visualize | Operations and economics needed a shared representation. | Created Mermaid [business](diagrams/business_flow.mmd), [entity](diagrams/entity_relationship.mmd) and [economic](diagrams/economic_flow.mmd) diagrams. | Made relationships, feedback and accounting explicit. |
-| 3. Specify | Diagrams needed formal assumptions. | Wrote [01 Process](docs/01_business_process.md), [02 Domain](docs/02_domain_model.md), [03 Economics](docs/03_economic_model.md) and [04 Problem framing](docs/04_problem_framing.md). | Defined feasible plans, objectives and questions for EDA. |
-| 4. Profile | A reusable tool already existed. | Imported my [EDA repository](https://github.com/gabrielscatena/EDA) using **Git subtree with squash**; ran the three CSVs under Python 3.12. | Obtained general HTML profiles and summaries without rebuilding the tool. |
-| 5. Validate | Profiling alone misses business relationships. | Implemented [eda_belvo.py](scripts/eda_belvo.py), [analysis logic](src/belvo/data/eda.py) and regression tests. | Validated joins, installments, balances and observed economics to refine docs 01–04. |
+Use **Python 3.12**. Put the provided `clients.csv`, `loan_snapshots.csv` and `payment_attempts.csv` in `data/raw/` (excluded from Git). From the repository root, run each command after the previous one succeeds:
 
-AI assistance supported documentation, implementation and verification; reused and case-specific code remain identifiable.
+```powershell
+py -3.12 -m venv .venv
+& .\.venv\Scripts\python.exe -m pip install -r conf/requirements-mvp.lock -e ".[mvp]"
 
-## Initial evidence and limitations
+# Daily economic decisions; simulated state, no external API calls
+& .\.venv\Scripts\python.exe -m belvo.pipelines.persistent --date 2026-04-01 --policy economic --state artifacts/runtime/review_economic.sqlite --provider-state artifacts/runtime/review_provider.sqlite
 
-The [package README](docs/provided/README.md) specifies a **1-in-15 loan sample**, observed **January–April 2026**. A's **10,000,000 transactions and upfront cost** apply to the full book for **January–June 2026**.
+# Frozen temporal offline comparison (several minutes)
+& .\.venv\Scripts\python.exe -m belvo.evaluation.offline
 
-| Observed sample metric | Result |
+# Invariants, concurrency, recovery and code checks
+& .\.venv\Scripts\python.exe -m pytest -q --basetemp tests/.pytest_tmp
+& .\.venv\Scripts\python.exe -m ruff check .
+```
+
+The daily command exports one decision/status per received loan, installment amounts in cents, providers, reason, economic support and lender constraints to `reports/pipeline/<run>/`. Original versions and cap context are retained. Invalid loans produce no new debit. A complete corrected portfolio can additionally report withdrawn loans. `--client C01` limits the full-portfolio scope. Add `--execute` for the **durable simulator**, or `--reconcile` to resolve its unknown submissions. Real provider integration is deliberately absent.
+
+Reusing state is an idempotent replay, not a new experiment. Different policies or backward-date experiments require separate state paths. State is initialized with observed historical A submissions before the requested day. See [runbook](docs/08_runbook.md) for baseline, EDA, benchmark and recovery details.
+
+## Results and how much to trust them
+
+[Full results](docs/09_results.md), [per-lender money](reports/evaluation/frozen_v1/per_client.csv), [calibration and uncertainty](reports/evaluation/frozen_v1/summary.json), [sensitivity](reports/evaluation/frozen_v1/sensitivities.csv).
+
+| April net margin, sample currency units | Amount |
 |---|---:|
-| Lenders / distinct loans | 12 / 10,714 |
-| Loan snapshots / payment attempts | 561,659 / 370,101 |
-| Commission revenue | 902,448.9620 |
-| Recorded attempt fees | 427,295.0000 |
-| Usage-priced margin diagnostic: revenue minus recorded fees | 475,153.9620 |
+| Observed legacy | 80,758.24 |
+| Same-model estimated legacy | 107,146.78 |
+| Estimated candidate | 1,228,967.16 |
+| Conservative candidate stress | 713,158.07 |
+| Relaxed supported-plan model ceiling | 1,257,322.98 |
 
-Amounts are abstract currency units. The usage-priced diagnostic excludes the cost of unused A capacity; it is **not final contract margin**. Three lenders have a negative diagnostic. Contract profitability also requires the missing May–June activity and an explicit upfront-cost allocation.
+Identical April states, lender weights and **30/181 of prepaid cost** are used for every row. The candidate consumes 275,962 A units, leaving 157,146 after prior use. Lender margins reconcile with the total. Positive estimated April margins do not establish six-month profitability: **C11 remains negative when the whole commitment is charged in Jan-Apr coverage**.
 
-Implemented checks had **zero failures**. Adjacent-day balances reconciled with collections; **1,922 observation gaps** were analyzed separately. Code checks and **12 project tests** passed; an independent Decimal reconstruction confirmed commission and fees.
+The large estimated uplift is **not established business value**. Only 5.59% of candidate loan-day actions exactly match legacy; coarse support cells do not identify causal provider/amount effects. The model already overstates observed legacy margin by 26,388.54. The candidate is the best feasible restricted policy found; the 28,355.82 gap to a relaxed model ceiling is conditional on that response model. A true sequential six-month ceiling is not identifiable here. Loan bootstrap excludes model bias and future-state uncertainty.
 
-Local evidence: [EDA report](reports/eda_belvo/20261028_112854_444227/report.md), [lender economics](reports/eda_belvo/20261028_112854_444227/economics_by_lender.csv), and [input hashes/settings](reports/eda_belvo/20261028_112854_444227/run_metadata.json). These outputs and EDA implementation changes are not yet committed at this checkpoint.
+May-June is unobserved. All tested fixed-composition continuation demands exceed remaining quota; their projected margins are null. The daily selector enforces capacity and can choose B/no-attempt, but future economic allocation needs refinement. Sample weight 15 provides a full-book point extrapolation, not an exact full-book optimization.
 
-Provider comparisons are observational; alternative actions lack observed outcomes. Legacy future balances cannot be reused unchanged as a validated new-policy simulation. **Policy uplift, attainable ceiling and final six-month margin remain unestablished.**
+## Architecture and verification
 
-## Reproduce the current analyses
+Python modules + local SQLite keep the MVP small. Candidate scoring precedes the write lock; selection, quota reservation, decision and outbox persist atomically. A separate simulated executor uses stable identities. Payment failures consume A; unknown delivery retains reservations until authoritative reconciliation. Corrected records are revalidated automatically; sent/uncertain effects cannot be overwritten.
 
-Place the original `clients.csv`, `loan_snapshots.csv` and `payment_attempts.csv` in `data/raw/` (excluded from Git). Use **Python 3.12**; the pinned profiler does not support 3.14. A local `.venv-eda` is already prepared. On a new machine, install Python 3.12 and run from the repository root:
+[Architecture](docs/05_architecture.md), [ADRs](docs/adrs/README.md), [risks](docs/06_assumptions_and_risks.md), [frozen protocol](docs/07_evaluation_protocol.md), [operational evidence](docs/10_validation.md).
 
-```powershell
-py -3.12 -m venv .venv-eda
-& ./.venv-eda/Scripts/python.exe -m pip install -r conf/requirements-eda.txt
-```
+Local benchmark for **4,640 loans**: **8.95 s** cold input/validation/fitting plus planning/commit; **2.52 s** warm planning/commit median. Three runs produced identical decisions. These measurements exclude dispatch/export/network and are not a production SLO. Tests cover independent-process quota contention, concurrent dispatch, interruption, uncertain submissions, expiry, corrections and state failure. The final clean-environment evidence is in [validation](reports/validation/clean_environment.json).
 
-Then run in PowerShell, continuing only after successful commands:
+Production is a proposal: shared transactional database, receiver, planner workers, outbox and reconciliation. Rollout starts in shadow, then a capped randomized pilot after calibration/support and lender profitability are addressed. Rollback stops new intents while retaining pending reservations.
 
-```powershell
-# General per-file profiles and summaries
-& ./scripts/run_eda.ps1
+## Rationale — Context, Action, Result
 
-# Cross-table validations and observed economic reconstruction
-& ./.venv-eda/Scripts/python.exe ./scripts/eda_belvo.py
-
-# Case-specific regression tests; no additional test dependency
-& ./.venv-eda/Scripts/python.exe -m unittest discover -s tests -p test_eda_belvo.py -v
-```
-
-Outputs: `reports/eda/<run-id>/` and `reports/eda_belvo/<run-id>/`; inputs are preserved. Specific EDA exit codes: **0** no failed checks, **2** failed data checks, **1** runtime error. See [script instructions](scripts/README.md).
-
-## Remaining challenge deliverables
-
-| Requirement | Current state / next step |
+| Step | Context → Action → Result |
 |---|---|
-| Design document, 2–4 pages | Consolidate working notes with architecture, risks, offline validation and rollout design. |
-| Working daily decision prototype | Implement attempt/no-attempt, installment amounts/counts and provider assignments. |
-| Offline comparison and results write-up | Compare candidate and legacy margins on matching scopes; report every lender and an attainable-ceiling estimate with uncertainty. |
+| Understand | Read the case and data README → establish economic objective, D/D+1 and sample/contract boundaries. |
+| Visualize | Create Mermaid business, entity and economic diagrams → make flow, constraints and accounting visible. |
+| Formalize | Write docs 01-04 → separate business objective, decision variables, assumptions and open questions. |
+| Profile | Import the existing [EDA tool](https://github.com/gabrielscatena/EDA) via **Git subtree with squash** → quickly profile all three datasets under Python 3.12. |
+| Validate | Build case-specific EDA → verify keys, joins, installment limits, balance evolution and lender economics. |
+| Implement | Record ADRs and freeze protocol → deliver a transactional daily motor, economic heuristic and reproducible comparison. |
+| Challenge claims | Audit support, calibration, quota scenarios and failures → publish limitations and decline live approval. |
 
-This README provides execution instructions and an interim report. Final design and policy-evaluation requirements remain open. See [CHANGELOG.md](CHANGELOG.md) for chronology and timing provenance.
+Initial EDA: 12 lenders, 10,714 loans, 561,659 snapshots and 370,101 attempts. Commission 902,448.9620; recorded fees 427,295; usage-priced diagnostic 475,153.9620. That diagnostic is not contract margin. [EDA evidence](reports/eda_belvo/20261028_112854_444227/report.md) includes 1,922 observation gaps and reconciled adjacent-day balances.
+
+AI tools assisted documentation, code and verification. Reused code remains in `tools/eda`; project-owned code is under `src/belvo`. [CHANGELOG](CHANGELOG.md) records commit checkpoints without presenting elapsed gaps as measured active effort. The [case specification](docs/provided/CHALLENGE.md) defines the deliverables.

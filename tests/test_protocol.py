@@ -1,3 +1,7 @@
+import json
+
+import pytest
+
 from belvo.config import Protocol, commission_percent
 
 
@@ -8,6 +12,24 @@ def test_point_in_time_and_contract_boundaries():
     assert p.a_available("2026-06-30")
     assert not p.a_available("2026-07-01")
     assert p.sample_capacity == 666666
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"full_a_capacity": 1.5},
+        {"a_opportunity_cost": "-1"},
+        {"amount_fractions": ["1.5"]},
+        {"prior_strength": 0},
+        {"outcome_delay_days": 0},
+        {"test_start": "2026-03-20"},
+    ],
+)
+def test_unsafe_configuration_rejected_before_state_mutation(tmp_path, changes):
+    target = tmp_path / "protocol.json"
+    target.write_text(json.dumps(Protocol.load().values | changes))
+    with pytest.raises(ValueError):
+        Protocol.load(target)
 
 
 def test_commission_boundaries():

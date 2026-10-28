@@ -14,6 +14,41 @@ class Protocol:
     @classmethod
     def load(cls, path: str | Path = "conf/protocol.json") -> "Protocol":
         values = json.loads(Path(path).read_text(encoding="utf-8"))
+        for key in (
+            "outcome_delay_days",
+            "sample_weight",
+            "full_a_capacity",
+            "max_installments",
+            "min_cell_attempts",
+            "prior_strength",
+        ):
+            if type(values[key]) is not int or values[key] < (0 if key == "full_a_capacity" else 1):
+                raise ValueError(f"Invalid integer setting: {key}")
+        for key in (
+            "contract_start",
+            "contract_end",
+            "train_end",
+            "validation_start",
+            "validation_end",
+            "test_start",
+            "test_end",
+        ):
+            if date.fromisoformat(values[key]).isoformat() != values[key]:
+                raise ValueError(f"Noncanonical date: {key}")
+        for key in ("full_a_upfront", "b_fee", "a_opportunity_cost", "conservative_z"):
+            number = Decimal(str(values[key]))
+            if not number.is_finite() or number < 0:
+                raise ValueError(f"Invalid nonnegative number: {key}")
+        if not values["amount_fractions"] or any(
+            not 0 < Decimal(f) <= 1 for f in values["amount_fractions"]
+        ):
+            raise ValueError("Amount fractions must be in (0,1]")
+        if values["allocation"] != "equal_lenders":
+            raise ValueError(
+                "Only equal_lenders selection is implemented; other allocations are sensitivities"
+            )
+        if not values["contract_start"] <= values["train_end"] < values["contract_end"]:
+            raise ValueError("Invalid contract window")
         if values["outcome_delay_days"] < 1 or values["sample_weight"] < 1:
             raise ValueError("Unsafe outcome delay or sample weight")
         if not (

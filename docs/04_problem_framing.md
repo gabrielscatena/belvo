@@ -2,7 +2,7 @@
 
 **Project:** Belvo — Intelligent Collections Engine
 
-**Stage:** Formal decision specification before algorithm or infrastructure selection
+**Stage:** Business specification; see implemented [ADRs](adrs/README.md) and [protocol](07_evaluation_protocol.md).
 
 **Inputs:** [Business process](01_business_process.md) · [Domain model](02_domain_model.md) · [Economic model](03_economic_model.md)
 
@@ -10,9 +10,9 @@
 
 Each day, lenders submit their current outstanding loan portfolios. For **each observed loan on that date**, Belvo must choose **no attempt** or a feasible plan with one or more payment installments, each with an amount and a provider assignment. The business objective is the highest **expected full-window absolute net margin** while respecting the outstanding balance, per-installment lender cap, the remaining six-month prepaid capacity of provider A, and a requirement to plan for positive expected margin **for each lender**. A daily incremental score is a tractable approximation to this dynamic objective, not its definition. Results from submitted transactions arrive the next day and inform future decisions. **Full-window realized margin**, after the prepaid A commitment and B per-attempt fees, is the ultimate business metric.
 
-### Supplied facts and pre-EDA status
+### Supplied facts and current evidence
 
-The [package README](provided/README.md) specifies **2026-01-01 to 2026-04-30**, a uniform **1-in-15 loan sample**, and an A window of **2026-01-01 to 2026-06-30**. The 10,000,000-unit commitment refers to the **full book**. Its metadata and CSV headers have been inspected; empirical data integrity, model validity and achievable margins remain unverified. May-June collections are not observed. Sampling scale and horizon must be fixed explicitly before the following optimization is instantiated.
+The [package README](provided/README.md) specifies **2026-01-01 to 2026-04-30**, a uniform **1-in-15 loan sample**, and an A window of **2026-01-01 to 2026-06-30**. The 10,000,000-unit commitment refers to the **full book**. Cross-table EDA and operational tests pass; causal uplift remains unverified. May-June collections are not observed. The [protocol](07_evaluation_protocol.md) instantiates a sample scenario and [results](09_results.md) separate observed, estimated and projected money. The full mathematical specification below exceeds the prototype's restricted heuristic; it is not a claim that a global stochastic optimizer was implemented.
 
 ## 2. Explicit objective / decision / constraint separation
 
@@ -261,4 +261,4 @@ The archive already contains the CSVs, README, and dictionary. The next step is 
 7. **Dynamic and horizon uncertainty:** inspect balance changes without declaring all changes to be collections; document unresolved external payments and May-June scenarios.
 8. **Specification decisions:** choose the candidate-plan grid, capacity scenario, lender fixed-cost weights, profitability threshold and comparison horizon; report sensitivity rather than selecting assumptions solely to produce favorable margins.
 
-**Status after this review:** requirements and supplied metadata reconciled; CSV headers verified; empirical validity, profitability, policy improvement and achievable ceiling **not yet established**. These are discovery/specification notes; condense them with the eventual architecture and rollout plan into the requested **2-4 page final design document**.
+**Current status:** cross-table checks and local operational tests pass. The [final design](design_document.md) condenses the implemented slice; [results](09_results.md) provide a restricted-model estimate and upper bound. Causal improvement, universal lender profitability and an achievable sequential six-month ceiling remain unestablished. The full specification here is not a claim of a global optimizer.

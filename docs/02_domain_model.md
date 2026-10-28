@@ -2,7 +2,7 @@
 
 **Project:** Belvo — Intelligent Collections Engine
 
-**Stage:** Logical data model; schema assertions require CSV verification
+**Stage:** Logical model, checked by cross-table EDA. SQLite implementation and its audit/outbox tables are described in [architecture](05_architecture.md) and [validation](10_validation.md).
 
 **Diagram:** [`diagrams/entity_relationship.mmd`](../diagrams/entity_relationship.mmd)
 

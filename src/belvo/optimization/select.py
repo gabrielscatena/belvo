@@ -117,6 +117,18 @@ def zero_future_budget(frame, day, protocol, clients=None):
         "success"
     ) - known.provider.eq("B") * float(protocol.values["b_fee"])
     past = known.groupby("client_id").realized_contribution.sum().to_dict()
+    pending = frame.loc[
+        frame.attempt_date.lt(day) & frame.attempt_date.gt(protocol.known_attempt_through(day))
+    ]
+    pending_b_cost = (
+        (pending.provider.eq("B").astype(int) * float(protocol.values["b_fee"]))
+        .groupby(pending.client_id)
+        .sum()
+        .to_dict()
+    )
     fixed = float(protocol.sample_upfront) / len(clients)
     # Pending and future contribution assumed zero: stringent sensitivity, not six-month prediction.
-    return {client: fixed - past.get(client, 0) + 0.0001 for client in clients}
+    return {
+        client: fixed - past.get(client, 0) + pending_b_cost.get(client, 0) + 0.0001
+        for client in clients
+    }

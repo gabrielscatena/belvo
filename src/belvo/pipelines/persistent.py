@@ -2,7 +2,7 @@
 
 import argparse
 import json
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 from belvo.config import Protocol
@@ -24,12 +24,18 @@ def main():
     parser.add_argument("--policy", choices=["baseline", "economic"], default="baseline")
     parser.add_argument("--client", help="Restrict to this lender's full daily portfolio")
     args = parser.parse_args()
+    try:
+        if date.fromisoformat(args.date).isoformat() != args.date:
+            raise ValueError("Noncanonical date")
+    except ValueError:
+        parser.error("Date must use YYYY-MM-DD")
     p = Protocol.load(args.config)
     attempts = read_csv(args.data_dir / "payment_attempts.csv", {"attempt_date", "provider"})
     consumed = sum(r["provider"] == "A" and r["attempt_date"] < args.date for r in attempts)
     store = Store(args.state, p, consumed=consumed)
     store.bind_policy(args.policy + "-v1")
     provider = SimulatedProvider(args.provider_state)
+    store.bind_provider(provider.identity)
     if args.reconcile:
         reconcile(store, provider)
     valid, rejected, raw = load_day(args.data_dir, args.date)

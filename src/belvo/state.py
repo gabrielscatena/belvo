@@ -2,6 +2,7 @@
 
 import json
 import sqlite3
+import uuid
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -93,6 +94,12 @@ class Store:
             db.execute("INSERT OR IGNORE INTO meta VALUES('policy',?)", (identity,))
             if db.execute("SELECT value FROM meta WHERE key='policy'").fetchone()[0] != identity:
                 raise ValueError("Use separate state for a different policy")
+
+    def bind_provider(self, identity):
+        with self.transaction() as db:
+            db.execute("INSERT OR IGNORE INTO meta VALUES('provider',?)", (identity,))
+            if db.execute("SELECT value FROM meta WHERE key='provider'").fetchone()[0] != identity:
+                raise ValueError("Provider registry was replaced; restore it before reconciliation")
 
     @staticmethod
     def _save_decision(db, row):
@@ -252,9 +259,16 @@ class Store:
                     zip(row["plan"]["amounts"], row["plan"]["providers"], strict=True)
                 ):
                     aid = fingerprint([row["loan_id"], day, row["version"], row["plan"], index])
+                    base_id, generation = aid, 0
+                    while previous := db.execute(
+                        "SELECT state FROM attempts WHERE id=?", (aid,)
+                    ).fetchone():
+                        if previous["state"] != "cancelled":
+                            raise ValueError("Attempt identity already active")
+                        generation += 1
+                        aid = fingerprint([base_id, generation])
                     db.execute(
-                        "INSERT INTO attempts VALUES(?,?,?,?,?, 'ready',NULL,NULL) "
-                        "ON CONFLICT(id) DO UPDATE SET state='ready' WHERE attempts.state='cancelled'",
+                        "INSERT INTO attempts VALUES(?,?,?,?,?, 'ready',NULL,NULL)",
                         (aid, row["loan_id"], day, provider, amount),
                     )
             reported_rejections = []
@@ -332,16 +346,35 @@ class SimulatedProvider:
         path.parent.mkdir(parents=True, exist_ok=True)
         with sqlite3.connect(path, factory=ClosingConnection) as db:
             db.execute("CREATE TABLE IF NOT EXISTS accepted(id TEXT PRIMARY KEY,payload TEXT)")
+            db.execute("CREATE TABLE IF NOT EXISTS rejected(id TEXT PRIMARY KEY)")
+            db.execute("CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY,value TEXT)")
+            db.execute("INSERT OR IGNORE INTO metadata VALUES('identity',?)", (str(uuid.uuid4()),))
+            self.identity = db.execute(
+                "SELECT value FROM metadata WHERE key='identity'"
+            ).fetchone()[0]
 
     def submit(self, attempt):
         payload = json.dumps(
             {k: attempt[k] for k in ("id", "loan_id", "day", "provider", "amount")}, sort_keys=True
         )
         with sqlite3.connect(self.path, timeout=10, factory=ClosingConnection) as db:
+            db.execute("BEGIN IMMEDIATE")
+            if db.execute("SELECT 1 FROM rejected WHERE id=?", (attempt["id"],)).fetchone():
+                return False
             old = db.execute("SELECT payload FROM accepted WHERE id=?", (attempt["id"],)).fetchone()
             if old and old[0] != payload:
                 raise ValueError("Idempotency key reused with different payload")
             db.execute("INSERT OR IGNORE INTO accepted VALUES(?,?)", (attempt["id"], payload))
+            return True
+
+    def resolve(self, aid):
+        """Atomically acknowledge acceptance or fence this identity against late acceptance."""
+        with sqlite3.connect(self.path, timeout=10, factory=ClosingConnection) as db:
+            db.execute("BEGIN IMMEDIATE")
+            if db.execute("SELECT 1 FROM accepted WHERE id=?", (aid,)).fetchone():
+                return True
+            db.execute("INSERT OR IGNORE INTO rejected VALUES(?)", (aid,))
+            return False
 
     def exists(self, aid):
         with sqlite3.connect(self.path, factory=ClosingConnection) as db:
@@ -349,15 +382,16 @@ class SimulatedProvider:
 
 
 def execute(store: Store, provider: SimulatedProvider, day, fault=None):
+    store.bind_provider(provider.identity)
     count = 0
     while (attempt := store.claim(day)) is not None:
         if fault == "timeout_before":
             store.delivery(attempt["id"], None)
             return count
-        provider.submit(attempt)
+        accepted = provider.submit(attempt)
         if fault == "crash_after":
             raise RuntimeError("Simulated process interruption after external acceptance")
-        store.delivery(attempt["id"], None if fault == "timeout_after" else True)
+        store.delivery(attempt["id"], None if accepted and fault == "timeout_after" else accepted)
         count += 1
         if fault:
             return count
@@ -365,8 +399,10 @@ def execute(store: Store, provider: SimulatedProvider, day, fault=None):
 
 
 def reconcile(store: Store, provider: SimulatedProvider):
+    store.bind_provider(provider.identity)
     for row in store.attempts():
         if row["state"] in ("sending", "unknown"):
-            # Simulator registry is authoritative. Real APIs need definitive evidence,
-            # not merely absence from an eventually-consistent query.
-            store.delivery(row["id"], provider.exists(row["id"]))
+            # Absence alone is unsafe even in a strongly consistent registry: a sender
+            # may still be in flight. The simulator fences rejected identities atomically.
+            # Real providers without this facility must retain unknown reservations.
+            store.delivery(row["id"], provider.resolve(row["id"]))

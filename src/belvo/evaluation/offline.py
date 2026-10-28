@@ -178,7 +178,9 @@ def evaluate(data: Path, output: Path, protocol: Protocol):
             )
             for r in group.itertuples()
         ]
-        selector = EconomicSelector(final_model, zero_future_budget(frame, day, protocol))
+        selector = EconomicSelector(
+            final_model, zero_future_budget(frame, day, protocol, clients=clients)
+        )
         decisions, quota = selector(loans, quota, protocol)
         lookup = {r["loan_id"]: r for r in decisions}
         daily.append(

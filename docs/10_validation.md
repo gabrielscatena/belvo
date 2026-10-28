@@ -17,8 +17,13 @@ original payloads and stable attempt identities provide auditability.
 Economic scoring is prepared before taking the write lock; quota allocation and durable
 intents still commit atomically. SQLite serializes writers; a lock timeout fails safely,
 not with a second authority or a guessed quota. External acceptance is simulated with a
-separate durable registry; absence is definitive only in this simulator. A real provider
-must offer authoritative reconciliation before any reservation is released.
+separate durable registry. Reconciliation atomically records either acceptance or a terminal
+rejection that fences late senders; absence alone is insufficient, even with consistent reads.
+A retry after definitive rejection gets a new generation identity. Ordinary retries of an
+active attempt keep their identity. A real provider without definitive rejection/cancellation
+must keep unknown reservations rather than infer non-submission from an empty query.
+The engine binds the simulator registry identity; replacing a lost registry cannot silently
+turn earlier accepted/unknown submissions into negative acknowledgements.
 
 [Measured benchmark](../reports/validation/benchmark.json): three local runs on 4,640
 April 1 loans, at most 25 candidate plans each. Report cold CSV/validation/fitting separately
@@ -32,3 +37,9 @@ Financial evidence and unresolved deployment blockers are in [results](09_result
 Recorded result: **44 tests pass**. Whole-portfolio cold preparation/fit plus planning/commit:
 **8.95 seconds**; warm planning/commit median **2.52 seconds**. Transaction intervals:
 0.86–0.90 seconds. Three runs produced the same decision hash and nonnegative free capacity.
+
+Final delivery verification: **53 tests pass in a fresh isolated environment**, including
+the late-sender/reconciliation race and replaced simulator registry. Model JSON, lender
+table and all six reported economic/capacity totals reproduce exactly. The final pending-B
+fee diagnostic correction changes no published daily unmet-lender counts. See
+[clean environment evidence](../reports/validation/clean_environment.json).

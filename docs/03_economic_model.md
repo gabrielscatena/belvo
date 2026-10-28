@@ -4,6 +4,11 @@
 
 **Stage:** Economic specification; formulas are proposed interpretations of the challenge
 
+Implementation update: [frozen protocol](07_evaluation_protocol.md),
+[economic policy ADR](adrs/0004_economic_policy.md) and [results](09_results.md)
+document the instantiated conventions and their limits. Full-window profitability is
+not inferred from the restricted one-step prototype.
+
 **Diagram:** [`diagrams/economic_flow.mmd`](../diagrams/economic_flow.mmd)
 
 ## 1. Objective and accounting perspectives
