@@ -1,6 +1,6 @@
 # Smart Collections Engine
 
-Senior Applied Data Scientist take-home. A local decision engine maximizes estimated absolute collection margin under installment caps and shared prepaid capacity, with explicit lender profitability diagnostics.
+Senior Applied Data Scientist take-home. A local decision-engine prototype selects plans to improve estimated absolute collection margin under installment caps and shared prepaid capacity, with explicit lender profitability diagnostics.
 
 **Delivery:** working prototype, offline evaluation, operational tests and a [three-page design](output/pdf/design_document.pdf) ([editable source](docs/design_document.md)). **Live rollout is not approved:** estimated gains are observational, C11 fails full-cost Jan-Apr coverage, and May-June demand remains unresolved.
 
@@ -13,7 +13,7 @@ py -3.12 -m venv .venv
 & .\.venv\Scripts\python.exe -m pip install -r conf/requirements-mvp.lock -e ".[mvp]"
 
 # Daily economic decisions; simulated state, no external API calls
-& .\.venv\Scripts\python.exe -m belvo.pipelines.persistent --date 2026-04-01 --policy economic --state artifacts/runtime/review_economic.sqlite --provider-state artifacts/runtime/review_provider.sqlite
+& .\.venv\Scripts\python.exe -m belvo.pipelines.persistent --date 2026-04-01 --policy economic --state artifacts/runtime/delivery_economic.sqlite --provider-state artifacts/runtime/delivery_provider.sqlite
 
 # Frozen temporal offline comparison (several minutes)
 & .\.venv\Scripts\python.exe -m belvo.evaluation.offline
@@ -25,13 +25,15 @@ py -3.12 -m venv .venv
 
 The daily command exports one decision/status per received loan, installment amounts in cents, providers, reason, economic support and lender constraints to `reports/pipeline/<run>/`. Original versions and cap context are retained. Invalid loans produce no new debit. A complete corrected portfolio can additionally report withdrawn loans. `--client C01` limits the full-portfolio scope. Add `--execute` for the **durable simulator**, or `--reconcile` to resolve its unknown submissions. Real provider integration is deliberately absent.
 
+For authoritative same-day corrections, increase `--source-revision` per lender/day; transmission retries retain their original revision. The first receipt may omit the flag. Old simulator stores without source-order metadata require new simulation paths; preserve the originals.
+
 Reusing state is an idempotent replay, not a new experiment. Different policies or backward-date experiments require separate state paths. State is initialized with observed historical A submissions before the requested day. See [runbook](docs/08_runbook.md) for baseline, EDA, benchmark and recovery details.
 
 ## Results and how much to trust them
 
-[Full results](docs/09_results.md), [per-lender money](reports/evaluation/frozen_v1/per_client.csv), [calibration and uncertainty](reports/evaluation/frozen_v1/summary.json), [sensitivity](reports/evaluation/frozen_v1/sensitivities.csv).
+[Full results](docs/09_results.md), [per-lender money](reports/evaluation/verified_v2/per_client.csv), [calibration and uncertainty](reports/evaluation/verified_v2/summary.json), [sensitivity](reports/evaluation/verified_v2/sensitivities.csv).
 
-| April net margin, sample currency units | Amount |
+| April net margin under allocated monthly prepaid-cost convention - sampled portfolio | Amount |
 |---|---:|
 | Observed legacy | 80,758.24 |
 | Same-model estimated legacy | 107,146.78 |
@@ -41,17 +43,17 @@ Reusing state is an idempotent replay, not a new experiment. Different policies 
 
 Identical April states, lender weights and **30/181 of prepaid cost** are used for every row. The candidate consumes 275,962 A units, leaving 157,146 after prior use. Lender margins reconcile with the total. Positive estimated April margins do not establish six-month profitability: **C11 remains negative when the whole commitment is charged in Jan-Apr coverage**.
 
-The large estimated uplift is **not established business value**. Only 5.59% of candidate loan-day actions exactly match legacy; coarse support cells do not identify causal provider/amount effects. The model already overstates observed legacy margin by 26,388.54. The candidate is the best feasible restricted policy found; the 28,355.82 gap to a relaxed model ceiling is conditional on that response model. A true sequential six-month ceiling is not identifiable here. Loan bootstrap excludes model bias and future-state uncertainty.
+The same-model candidate-minus-legacy estimate is **1,121,820.38**, not established causal business value. Candidate volume is **318,115 attempts versus 93,772 legacy (3.39x)**, increasing extrapolation, debtor-interference and operational risks. Only 5.59% of candidate loan-day actions exactly match legacy; coarse support cells do not identify causal provider/amount effects. The model already overstates observed legacy margin by 26,388.54. The candidate is the best feasible restricted policy found; the 28,355.82 gap to a relaxed model ceiling is conditional on that response model. A true sequential six-month ceiling is not identifiable here. Loan bootstrap excludes model bias and future-state uncertainty.
 
 May-June is unobserved. All tested fixed-composition continuation demands exceed remaining quota; their projected margins are null. The daily selector enforces capacity and can choose B/no-attempt, but future economic allocation needs refinement. Sample weight 15 provides a full-book point extrapolation, not an exact full-book optimization.
 
 ## Architecture and verification
 
-Python modules + local SQLite keep the MVP small. Candidate scoring precedes the write lock; selection, quota reservation, decision and outbox persist atomically. A separate simulated executor uses stable identities. Payment failures consume A; unknown delivery retains reservations until authoritative reconciliation. Corrected records are revalidated automatically; sent/uncertain effects cannot be overwritten.
+Python modules + local SQLite keep the MVP small. Candidate scoring precedes the write lock; selection, quota reservation, decision and outbox persist atomically. A separate simulated executor uses stable identities. Payment failures consume A; unknown delivery retains reservations until authoritative reconciliation. Corrected records are revalidated automatically; sent/uncertain effects cannot be overwritten. Source revisions order corrections and reject stale retries. Invalid historical loan-days are isolated, and scored decisions reference immutable model artifacts. Prepaid capacity is enforced; opportunity cost is configurable but zero in the frozen evaluation. Runtime outcome feedback into training/budgets remains future work.
 
 [Architecture](docs/05_architecture.md), [ADRs](docs/adrs/README.md), [risks](docs/06_assumptions_and_risks.md), [frozen protocol](docs/07_evaluation_protocol.md), [operational evidence](docs/10_validation.md).
 
-Local benchmark for **4,640 loans**: **8.95 s** cold input/validation/fitting plus planning/commit; **2.52 s** warm planning/commit median. Three runs produced identical decisions. These measurements exclude dispatch/export/network and are not a production SLO. Tests cover independent-process quota contention, concurrent dispatch, interruption, uncertain submissions, expiry, corrections and state failure. The final clean-environment evidence is in [validation](reports/validation/clean_environment.json).
+Local benchmark for **4,640 loans**: **25.39 s** cold input/validation/fitting plus planning/commit; **2.93 s** warm planning/commit median. Three runs produced identical decisions. These measurements exclude dispatch/export/network and are not a production SLO. The final isolated suite passes **71 tests**. Tests cover independent-process quota contention, concurrent dispatch, interruption, uncertain submissions, expiry, corrections and state failure. The final clean-environment evidence is in [validation](reports/validation/delivery_review.json).
 
 Production is a proposal: shared transactional database, receiver, planner workers, outbox and reconciliation. Rollout starts in shadow, then a capped randomized pilot after calibration/support and lender profitability are addressed. Rollback stops new intents while retaining pending reservations.
 

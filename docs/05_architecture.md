@@ -14,7 +14,8 @@ and in [risks](06_assumptions_and_risks.md). No real provider integration is inc
 | Selector | Plans, policy, shared quota, lender budget | One active loan-day decision with reason; report unmet financial constraints |
 | Store | Versions, decisions, reservations | Atomically persist plan, A reservation and durable send intents |
 | Simulated executor | Send intents with stable identities | Submit/reconcile, preserving ambiguous delivery state |
-| Reconciler | Acknowledgements and D+1 outcomes | Transfer reserved to consumed once; report usage and financial margins |
+| Reconciler | Submission acknowledgements | Transfer reserved to consumed once; preserve uncertain state |
+| Outcome feedback | D+1 outcomes | Local recording exists; automatic training/budget feedback is future work |
 | Offline evaluator | Frozen splits and legacy loan states | Observed legacy versus estimated candidate, support, uncertainty and scoped ceiling |
 
 The motor ends at a persisted decision and intent. The executor owns submission, not
@@ -38,6 +39,10 @@ the local simulator supports idempotent identities but proves no real-provider g
 Corrected records may replace an entirely unsent plan atomically. Submitted or uncertain
 attempts protect the loan-day from replacement. Invalid corrections cancel unsent intents.
 All versions and validation flags remain audit evidence. Source payloads are never overwritten.
+Monotonic upstream revisions order same-day corrections; equal revisions require equal contents.
+Reject stale revisions; genuine reappearance needs a new revision. Historical validation
+excludes D/future records before conversion; invalid loan-days do not stop unaffected loans.
+Decisions and complete immutable model artifacts persist together; see ADR 0005.
 
 ## Decision strategy and trade-offs
 
@@ -48,6 +53,9 @@ do not establish profitability. No-attempt does not erase fixed cost. Opportunit
 only a decision penalty, never another accounting charge or a duplicate scarcity penalty.
 
 ## Production proposal (not deployed)
+
+Prepare validated history and immutable model artifacts once per information cutoff for
+reuse by arrival planners; full cold CSV validation is not a low-latency serving promise.
 
 A receiver would durably register arrivals and enqueue work. Stateless planners would use
 a shared transactional database; separate outbox workers and a reconciler would communicate

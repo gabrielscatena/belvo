@@ -1,0 +1,309 @@
+{
+  "scope": "April conditional one-step replay on legacy states, sample scale",
+  "test_days": 30,
+  "loan_days": 140710,
+  "loans": 6233,
+  "model_through": "2026-03-30",
+  "initial_a_consumed": 233558,
+  "remaining_a": 157146,
+  "prior_capacity_overage": false,
+  "april_fixed_cost": 110497.23756906077,
+  "legacy_observed_april_margin": 80758.24293093923,
+  "legacy_estimated_april_margin": 107146.78343329723,
+  "candidate_estimated_april_margin": 1228967.1597942705,
+  "candidate_conservative_april_margin": 713158.0660260448,
+  "relaxed_model_april_ceiling": 1257322.9791312471,
+  "candidate_a_units": 275962,
+  "candidate_b_units": 42153,
+  "exact_legacy_action_match_fraction": 0.055880889773292586,
+  "negative_candidate_lenders_april": [],
+  "negative_candidate_lenders_coverage": [
+    "C11"
+  ],
+  "candidate_jan_apr_coverage": 1269603.2121966651,
+  "legacy_jan_apr_coverage": 121394.29533333331,
+  "ceiling_scope": "Restricted supported-plan mean upper bound, relaxing A capacity and lender constraints. Not a causal or six-month achievable guarantee.",
+  "calibration": {
+    "validation": [
+      {
+        "provider": "A",
+        "attempts": 79712,
+        "observed_success_rate": 0.007752910477719791,
+        "predicted_success_rate": 0.008288234183637517,
+        "brier": 0.007683533443674973,
+        "supported_fraction": 0.9647857286230429
+      },
+      {
+        "provider": "B",
+        "attempts": 13668,
+        "observed_success_rate": 0.02026631548141645,
+        "predicted_success_rate": 0.01508571793112802,
+        "brier": 0.019881547174665035,
+        "supported_fraction": 0.545068773778168
+      }
+    ],
+    "test": [
+      {
+        "provider": "A",
+        "attempts": 79349,
+        "observed_success_rate": 0.007637147286040152,
+        "predicted_success_rate": 0.008090129414341733,
+        "brier": 0.007566412103632081,
+        "supported_fraction": 0.9825454637109479
+      },
+      {
+        "provider": "B",
+        "attempts": 14423,
+        "observed_success_rate": 0.01733342577827082,
+        "predicted_success_rate": 0.017211315916915756,
+        "brier": 0.016961937388416712,
+        "supported_fraction": 0.7085211121125979
+      }
+    ]
+  },
+  "bootstrap": {
+    "unit": "loan trajectory",
+    "repetitions": 400,
+    "candidate_margin_interval": [
+      1198235.7658329022,
+      1257438.0921494036
+    ],
+    "estimated_uplift_interval": [
+      1093504.5800032336,
+      1147473.8546206527
+    ],
+    "warning": "Conditional resampling variation only; excludes causal/model/arrival uncertainty"
+  },
+  "protocol": {
+    "version": "2026-10-28-v1",
+    "contract_start": "2026-01-01",
+    "contract_end": "2026-06-30",
+    "train_end": "2026-02-28",
+    "validation_start": "2026-03-01",
+    "validation_end": "2026-03-31",
+    "test_start": "2026-04-01",
+    "test_end": "2026-04-30",
+    "outcome_delay_days": 2,
+    "sample_weight": 15,
+    "full_a_capacity": 10000000,
+    "full_a_upfront": "10000000",
+    "b_fee": "2.00",
+    "allocation": "equal_lenders",
+    "max_installments": 3,
+    "amount_fractions": [
+      "0.25",
+      "0.50",
+      "0.75",
+      "1.00"
+    ],
+    "a_opportunity_cost": "0.00",
+    "min_cell_attempts": 100,
+    "prior_strength": 100,
+    "conservative_z": 1.0,
+    "seed": 42
+  },
+  "source_sha256": {
+    "clients.csv": "a09082edcf6043549eecb9ebb55d51e76b8421fd784a6a0843b5556735f83a5d",
+    "loan_snapshots.csv": "d603d7955f2c19895a9c7090b82ea801eb6a1810ba3e95b39014c1c3767da75d",
+    "payment_attempts.csv": "390b8d7c68c3e56c208e0f1c6421897e24e92948243efd504516ca5743c7da06"
+  },
+  "may_june_scenarios": [
+    {
+      "demand_multiplier": 0.5,
+      "future_days": 61,
+      "assumption": "Repeat April fixed-action daily composition; not a dynamic forecast",
+      "future_a_units": 280561,
+      "capacity_satisfied": false,
+      "candidate_contract_margin_projection": null
+    },
+    {
+      "demand_multiplier": 1.0,
+      "future_days": 61,
+      "assumption": "Repeat April fixed-action daily composition; not a dynamic forecast",
+      "future_a_units": 561122,
+      "capacity_satisfied": false,
+      "candidate_contract_margin_projection": null
+    },
+    {
+      "demand_multiplier": 1.5,
+      "future_days": 61,
+      "assumption": "Repeat April fixed-action daily composition; not a dynamic forecast",
+      "future_a_units": 841684,
+      "capacity_satisfied": false,
+      "candidate_contract_margin_projection": null
+    }
+  ],
+  "lender_bootstrap": {
+    "C01": {
+      "unit": "loan trajectory",
+      "repetitions": 400,
+      "candidate_margin_interval": [
+        205195.30961227513,
+        221494.3925230457
+      ],
+      "estimated_uplift_interval": [
+        180481.86326136018,
+        195029.4794312929
+      ],
+      "warning": "Conditional resampling variation only; excludes causal/model/arrival uncertainty"
+    },
+    "C02": {
+      "unit": "loan trajectory",
+      "repetitions": 400,
+      "candidate_margin_interval": [
+        210395.12127748548,
+        232643.79299742484
+      ],
+      "estimated_uplift_interval": [
+        187573.82567760584,
+        207618.39313737277
+      ],
+      "warning": "Conditional resampling variation only; excludes causal/model/arrival uncertainty"
+    },
+    "C03": {
+      "unit": "loan trajectory",
+      "repetitions": 400,
+      "candidate_margin_interval": [
+        54379.00356232582,
+        60624.95530330226
+      ],
+      "estimated_uplift_interval": [
+        47381.53858635261,
+        52557.217279380915
+      ],
+      "warning": "Conditional resampling variation only; excludes causal/model/arrival uncertainty"
+    },
+    "C04": {
+      "unit": "loan trajectory",
+      "repetitions": 400,
+      "candidate_margin_interval": [
+        127229.94051163108,
+        140993.1131352849
+      ],
+      "estimated_uplift_interval": [
+        106762.27735897477,
+        118454.74339645487
+      ],
+      "warning": "Conditional resampling variation only; excludes causal/model/arrival uncertainty"
+    },
+    "C05": {
+      "unit": "loan trajectory",
+      "repetitions": 400,
+      "candidate_margin_interval": [
+        31525.141481822277,
+        34881.8989705255
+      ],
+      "estimated_uplift_interval": [
+        33237.77963718944,
+        36415.7464828489
+      ],
+      "warning": "Conditional resampling variation only; excludes causal/model/arrival uncertainty"
+    },
+    "C06": {
+      "unit": "loan trajectory",
+      "repetitions": 400,
+      "candidate_margin_interval": [
+        67238.11170648478,
+        74479.5982365498
+      ],
+      "estimated_uplift_interval": [
+        65499.2992082131,
+        72133.39995891458
+      ],
+      "warning": "Conditional resampling variation only; excludes causal/model/arrival uncertainty"
+    },
+    "C07": {
+      "unit": "loan trajectory",
+      "repetitions": 400,
+      "candidate_margin_interval": [
+        105404.41487616178,
+        118782.4590706446
+      ],
+      "estimated_uplift_interval": [
+        93027.8620638492,
+        104921.4150301303
+      ],
+      "warning": "Conditional resampling variation only; excludes causal/model/arrival uncertainty"
+    },
+    "C08": {
+      "unit": "loan trajectory",
+      "repetitions": 400,
+      "candidate_margin_interval": [
+        37761.94217444173,
+        44386.468526452816
+      ],
+      "estimated_uplift_interval": [
+        39129.82899879548,
+        45082.9125884856
+      ],
+      "warning": "Conditional resampling variation only; excludes causal/model/arrival uncertainty"
+    },
+    "C09": {
+      "unit": "loan trajectory",
+      "repetitions": 400,
+      "candidate_margin_interval": [
+        142923.36214372664,
+        165398.56019291905
+      ],
+      "estimated_uplift_interval": [
+        134735.16412186486,
+        156629.63214721507
+      ],
+      "warning": "Conditional resampling variation only; excludes causal/model/arrival uncertainty"
+    },
+    "C10": {
+      "unit": "loan trajectory",
+      "repetitions": 400,
+      "candidate_margin_interval": [
+        40873.5672155374,
+        44730.24597550827
+      ],
+      "estimated_uplift_interval": [
+        35663.69202991214,
+        38613.35157804167
+      ],
+      "warning": "Conditional resampling variation only; excludes causal/model/arrival uncertainty"
+    },
+    "C11": {
+      "unit": "loan trajectory",
+      "repetitions": 400,
+      "candidate_margin_interval": [
+        12084.975823953186,
+        13811.11482943881
+      ],
+      "estimated_uplift_interval": [
+        20432.07320684336,
+        22187.5703898759
+      ],
+      "warning": "Conditional resampling variation only; excludes causal/model/arrival uncertainty"
+    },
+    "C12": {
+      "unit": "loan trajectory",
+      "repetitions": 400,
+      "candidate_margin_interval": [
+        128810.31660031705,
+        143683.45902929545
+      ],
+      "estimated_uplift_interval": [
+        119406.9948781191,
+        131883.4445952875
+      ],
+      "warning": "Conditional resampling variation only; excludes causal/model/arrival uncertainty"
+    }
+  },
+  "estimated_gap_to_relaxed_ceiling": 28355.819336976623,
+  "legacy_estimated_margin_error": 26388.540502357995,
+  "same_model_estimated_uplift": 1121820.3763609733,
+  "legacy_attempts_april": 93772,
+  "candidate_attempts_april": 318115,
+  "candidate_to_legacy_attempt_ratio": 3.39243057629143,
+  "model_hash": "c3a3a43d91aece2cdba732076ab19c318ede0a50512a868aa70534b8665e6c21",
+  "rollout_approved": false,
+  "rollout_blockers": [
+    "Exact legacy action match 5.59%; coarse cells are not causal support",
+    "Legacy monetary calibration error 26388.54; model bias remains unquantified",
+    "Nonpositive full-upfront coverage lenders ['C11']; six-month profit is unestablished",
+    "May-June continuation depends on absent data and remaining capacity; see scenario flags",
+    "Different actions change future balances; this is not a sequential intervention evaluation"
+  ]
+}

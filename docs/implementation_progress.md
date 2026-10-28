@@ -12,3 +12,8 @@ updated after successful synchronization.
 6. Candidate / legacy evaluation: frozen April replay, reconciled lender accounting, calibration, uncertainty and explicitly scoped ceiling; live rollout not approved.
 7. Concurrency, failure and performance: independent-process contention, recovery and corrections tested; local latency measured on 4,640 loans.
 8. Final delivery: three-page design PDF/source, README/results/runbook, pinned clean environment and final regression evidence. Prototype complete; live deployment remains unapproved.
+
+Delivery review corrections: ordered source revisions, isolated point-in-time history,
+immutable model evidence and refreshed unsent decisions are covered by 71 passing tests.
+Original policy parameters and financial results remain unchanged. See
+[delivery verification](../reports/validation/delivery_review.json) and ADR 0005.

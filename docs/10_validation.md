@@ -43,3 +43,23 @@ the late-sender/reconciliation race and replaced simulator registry. Model JSON,
 table and all six reported economic/capacity totals reproduce exactly. The final pending-B
 fee diagnostic correction changes no published daily unmet-lender counts. See
 [clean environment evidence](../reports/validation/clean_environment.json).
+
+
+## Delivery correction checkpoint
+
+The original 44/53-test and performance figures above are historical checkpoints.
+Current isolated verification passes **71 tests**, including real CLI regressions for
+stale portfolios after a zero-balance correction, current/future invalid records,
+whole-plan quarantine, unavailable labels, concurrent source revisions, immutable model
+publication/restoration, and rejection of unordered legacy simulator state. Ruff and
+compatibility checks for all 14 locked packages also pass.
+
+Source ordering and model evidence are specified in ADR 0005. The response estimator,
+action grid and policy hyperparameters remain frozen. Model provenance format v2 changes
+identifiers; the original frozen_v1 checkpoint remains preserved. Current reproduction and
+[delivery evidence](../reports/validation/delivery_review.json) preserve the original artifacts.
+The [current benchmark](../reports/validation/benchmark_v2.json) measures 25.39s cold and
+2.93s warm median, including ordered source registration and immutable model persistence.
+This cold run is slower than the original checkpoint; do not present the old 8.95s as current.
+Cold preparation rechecks the supplied CSV history; warm planning reuses a prepared model.
+These are three local samples and exclude dispatch/export, with no percentile SLO claim.

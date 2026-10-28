@@ -82,3 +82,22 @@ Linux Ruff reported EXE001 because `scripts/eda_belvo.py` had a shebang but Git 
 100644. Remove the unnecessary shebang: documented usage already invokes Python
 explicitly. Ruff, the EDA CLI help command and all 53 tests pass locally. The Linux
 workflow is checked separately after pushing; Windows lint alone is not CI evidence.
+
+
+## Delivery review corrections - 2026-10-28 (UTC-03)
+
+The attached review's figures were confirmed. No response model or frozen policy was retuned.
+The first correction's active start was not recorded. Later intervals below are elapsed
+commit/verification checkpoints, not measured active effort.
+
+| Start checkpoint | End checkpoint | Elapsed minutes | Context -> Action -> Result | Evidence |
+|---|---|---:|---|---|
+| N/R | 16:03:49 | N/R | Unsafe retries/history -> add ordered revisions, isolated point-in-time validation and immutable models -> 70 tests, Linux CI passed. | `7e20d2f` |
+| 16:03:49 | 16:12:24 | 8.58 | Corrected training -> refresh unsent model/budget-dependent decisions and cancel unsupported pending debits -> 71 tests, Linux CI passed. | `470ffc2` |
+| 16:12:24 | 16:17:24 | 5.01 | Verify delivery -> reproduce April, real-day replay, model restoration, benchmark and 3-page design -> unchanged financial tables, explicit limitations. | Pre-commit verification; reports/validation/delivery_review.json |
+
+Current benchmark: 25.39s cold, 2.93s warm planning/commit median, 4,640 loans.
+The original frozen_v1 artifacts and original benchmark are preserved. Current model
+provenance v2 and results are in verified_v2; fitted cells/probabilities are unchanged.
+The cold measurement is slower than the original checkpoint and is not hidden by using
+its old number. No production latency SLO or causal uplift is claimed.

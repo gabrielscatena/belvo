@@ -1,0 +1,89 @@
+{
+  "recorded_at": "2026-10-28T16:16:12.798788-03:00",
+  "code_commit": "470ffc201ae9ec98e5db2d8187898725b8e740d7",
+  "python": "3.12.14",
+  "environment": "new isolated artifacts/runtime/delivery-check, editable [mvp] plus conf/requirements-mvp.lock",
+  "tests_passed": 71,
+  "ruff": "passed",
+  "dependency_check": "14 packages, all compatible",
+  "functional_ci": {
+    "conclusion": "success",
+    "url": "https://github.com/gabrielscatena/belvo/actions/runs/40752223917"
+  },
+  "regressions": [
+    "stale retry after zero balance",
+    "withdrawal/reappearance with source order",
+    "concurrent revisions and rollback",
+    "invalid current/future records through CLI",
+    "invalid historical sibling plans",
+    "unavailable outcomes excluded",
+    "no valid training fallback",
+    "automatic refresh after history correction",
+    "loss of training cancels unsent debits",
+    "feature/configuration-sensitive model identity",
+    "concurrent immutable model publication",
+    "model restoration and corruption detection",
+    "unordered legacy state rejected"
+  ],
+  "full_temporal_replay": "completed; reports/evaluation/verified_v2",
+  "all_original_summary_fields_identical": true,
+  "exact_financial_capacity_matches": {
+    "legacy_observed_april_margin": 80758.24293093923,
+    "legacy_estimated_april_margin": 107146.78343329723,
+    "candidate_estimated_april_margin": 1228967.1597942705,
+    "candidate_conservative_april_margin": 713158.0660260448,
+    "relaxed_model_april_ceiling": 1257322.9791312471,
+    "remaining_a": 157146
+  },
+  "exact_table_matches": {
+    "per_client.csv": true,
+    "daily.csv": true,
+    "sensitivities.csv": true
+  },
+  "fitted_state_unchanged": {
+    "cells": true,
+    "parents": true,
+    "global_rate": true,
+    "fitted_through": true,
+    "protocol": true
+  },
+  "provenance_change": "artifact format v2 hashes fitting features/configuration/state; identifiers intentionally differ from frozen_v1",
+  "model_hash": "c3a3a43d91aece2cdba732076ab19c318ede0a50512a868aa70534b8665e6c21",
+  "restored_real_decision_matches": true,
+  "model_sqlite_and_file_match": true,
+  "daily_pipeline": {
+    "loans": 4640,
+    "unique_loan_days": 4640,
+    "replay_decisions_identical": true,
+    "quota": {
+      "id": 1,
+      "total": 666666,
+      "consumed": 233558,
+      "reserved": 9076,
+      "free": 424032
+    },
+    "benchmark_decision_hash_match": true
+  },
+  "benchmark": "reports/validation/benchmark_v2.json",
+  "cold_total_seconds": 25.39426079997793,
+  "warm_median_seconds": 2.9306833500158973,
+  "performance_scope": "3 local planning/commit runs, no dispatch/export; full CSV history cold preparation; not a p95/SLO",
+  "design_pdf_pages": 3,
+  "design_pdf_visual_review": "passed; pages 1-2 unchanged, page 3 re-rendered and inspected",
+  "design_pdf_sha256": "2b6176a3cacf2c86a631e24b1e4595991d60e6e198fb949a01b349935371e485",
+  "source_sha256_normalized_lf": "b901d8204e02a33bf5b7283116e655613f2eecda184e2b0a9a64378e6b7b6989",
+  "input_sha256": {
+    "clients.csv": "a09082edcf6043549eecb9ebb55d51e76b8421fd784a6a0843b5556735f83a5d",
+    "loan_snapshots.csv": "d603d7955f2c19895a9c7090b82ea801eb6a1810ba3e95b39014c1c3767da75d",
+    "payment_attempts.csv": "390b8d7c68c3e56c208e0f1c6421897e24e92948243efd504516ca5743c7da06"
+  },
+  "unchanged_business_blockers": [
+    "Exact legacy action match 5.59%; coarse cells are not causal support",
+    "Legacy monetary calibration error 26388.54; model bias remains unquantified",
+    "Nonpositive full-upfront coverage lenders ['C11']; six-month profit is unestablished",
+    "May-June continuation depends on absent data and remaining capacity; see scenario flags",
+    "Different actions change future balances; this is not a sequential intervention evaluation"
+  ],
+  "markdown_files_checked": 28,
+  "markdown_local_links": "passed"
+}

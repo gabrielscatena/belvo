@@ -1,16 +1,16 @@
 # Results and trust assessment
 
-Frozen [protocol](07_evaluation_protocol.md), [outputs](../reports/evaluation/frozen_v1/results.md),
-[lender table](../reports/evaluation/frozen_v1/per_client.csv),
-[diagnostics / uncertainty](../reports/evaluation/frozen_v1/summary.json),
-[sensitivity](../reports/evaluation/frozen_v1/sensitivities.csv).
+Frozen [protocol](07_evaluation_protocol.md), [outputs](../reports/evaluation/verified_v2/results.md),
+[lender table](../reports/evaluation/verified_v2/per_client.csv),
+[diagnostics / uncertainty](../reports/evaluation/verified_v2/summary.json),
+[sensitivity](../reports/evaluation/verified_v2/sensitivities.csv).
 
 April has 140,710 observed loan-days across 6,233 loans. The final probability baseline
 uses labels through March 30 only. Each evaluated candidate action is feasible in cents
 and the sampled A capacity scenario, including prior observed consumption. Evaluation
 conditions on legacy portfolio states; it does not produce new observed outcomes.
 
-| April net margin, sample currency | Result |
+| April net margin under allocated monthly prepaid-cost convention - sampled portfolio | Result |
 |---|---:|
 | Observed legacy | 80,758.24 |
 | Model-estimated legacy | 107,146.78 |
@@ -29,6 +29,12 @@ optimum. Its gap to a relaxed model upper bound is 28,355.82. The upper bound ig
 quota coupling and lender constraints, retains restricted plans and fitted mean response,
 and is **not** an achievable six-month ceiling. An intervention ceiling is not identifiable
 from these data without additional assumptions or experimentation.
+
+The same-model estimated uplift is **1,121,820.38** (candidate minus model-estimated
+legacy), not measured causal improvement. Candidate volume is **318,115 attempts versus
+93,772 legacy: 3.39x**, increasing amount-support, interference and operational uncertainty.
+Prepaid capacity is a hard constraint; the opportunity-cost parameter is configurable but
+zero in this evaluation. Estimating a nonzero price remains future work.
 
 The large apparent uplift is especially uncertain: only 5.59% of candidate loan-day
 actions exactly match legacy. Cell counts establish coarse historical coverage, not

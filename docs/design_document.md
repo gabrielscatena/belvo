@@ -14,7 +14,8 @@ Commission is recovered amount times the DPD rate on submission day: 15%, 20%, 2
 40%, 50% for the specified age bands. B costs 2 per attempt, including failures. A has
 10 million prepaid transactions expiring June 30, paid upfront without refund or rollover.
 Contract margin subtracts the entire A commitment once and all B fees; A use does not
-create a second charge. Opportunity cost affects selection, never reported accounting.
+create a second charge. Prepaid capacity is a hard constraint. Opportunity cost is
+configurable but zero in the frozen run; estimating a nonzero price remains future work.
 
 ## 2. Restricted, explainable prototype
 
@@ -46,7 +47,7 @@ requirements. No-attempt cannot remove fixed cost or guarantee a profitable cont
 | Planner / scorer | Point-in-time information, cent-exact plans, supported estimates and reproducible reasons |
 | Transactional store | One active loan-day decision, shared quota reservation, decision history and outbox |
 | Simulated executor | Stable attempt identities, durable acknowledgement, uncertain delivery and reconciliation |
-| Daily reporting | Usage, pending state, per-lender and overall expected/realized money |
+| Offline reporting | Legacy and estimated candidate money; operational outcome feedback is future work |
 
 Python modules and a CLI run locally. SQLite supplies the smallest transactional authority
 needed for this slice: unique keys, WAL, bounded waits and a serialized write transaction.
@@ -63,7 +64,9 @@ Automatically revalidate corrections. Replace entirely unsent plans atomically; 
 remaining unsent intents after invalid corrections or disappearance from a complete lender
 portfolio. Preserve uncertain/submitted effects and prevent another loan-day plan. Reappearance
 is allowed when prior intents were proven unsent. Reject backward-date use of live state;
-use separate stores for experiments. Original payloads, versions and decision events remain.
+use separate stores for experiments. Source revisions increase per lender/day: reject stale
+updates and conflicting reuse of a revision; genuine reappearance needs a new revision.
+Original payloads, decisions and immutable hash-addressed models remain auditable.
 
 ## 4. Production proposal and rollout
 
@@ -90,7 +93,7 @@ a 1-in-15 loan sample; use floor(10M/15) capacity and 10M/15 upfront as a sample
 Hold lender allocation equal and fixed across policies. Scale flows by 15 only as full-book
 point extrapolation. May-June is unobserved; history is left-truncated.
 
-| April net margin, sample currency units | Amount |
+| April net margin under allocated monthly prepaid-cost convention - sampled portfolio | Amount |
 |---|---:|
 | Observed legacy | 80,758.24 |
 | Same-model estimated legacy | 107,146.78 |
@@ -107,7 +110,9 @@ achievable sequential ceiling. The relaxation ignores quota coupling and lender 
 April evaluation has 140,710 loan-days and 6,233 loans. Outcomes of alternative actions
 are not observed. Only 5.59% of candidate loan-day actions exactly match legacy; coarse
 bin counts are not causal support. Monetary calibration error is material. The large
-estimated uplift is not demonstrated business value. Loan-cluster bootstrap intervals
+same-model uplift is 1,121,820.38; it is not demonstrated business value. Candidate volume
+is 318,115 attempts versus 93,772 legacy (3.39x), adding extrapolation and interference risk.
+Loan-cluster bootstrap intervals
 condition on the fitted model and exclude response bias and future-state uncertainty.
 
 Candidate A use is 275,962 units, leaving 157,146 after prior usage. Every tested May-June
@@ -117,10 +122,10 @@ future balances permits conditional one-step comparison, not a causal sequential
 
 Operational tests cover concurrent writers/dispatch, restart, unknown sends, corrections,
 expiry and unavailable state. For 4,640 loans: measured cold preparation plus planning/commit
-8.95s; warm planning/commit median 2.52s. Three local runs are not a percentile SLO; dispatch
+25.39s; warm planning/commit median 2.93s. Three local runs are not a percentile SLO; dispatch
 and network are excluded. A clean environment reproduces the package and tests.
 
 **Recommendation: shadow only.** Resolve lender-level calibration and action support, collect
 arrival timestamps, and run a capped randomized pilot before claiming causal uplift or live
 profitability. Sources and reproduction: README, docs/provided/CHALLENGE.md, docs/07_evaluation_protocol.md,
-reports/evaluation/frozen_v1 and reports/validation/benchmark.json. Full ADRs and risks are in docs.
+reports/evaluation/verified_v2 and reports/validation/benchmark_v2.json. Full ADRs and risks are in docs.

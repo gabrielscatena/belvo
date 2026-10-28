@@ -1,0 +1,63 @@
+{
+  "recorded_at": "2026-10-28T16:13:11.824468-03:00",
+  "date": "2026-04-01",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "processor": "AMD64 Family 23 Model 96 Stepping 1, AuthenticAMD",
+  "python": "3.12.14",
+  "pandas": "2.3.0",
+  "numpy": "2.1.3",
+  "scope": "Full received portfolio, economic selection plus durable commit; no dispatch/export",
+  "loans": 4640,
+  "quarantined": 0,
+  "installment_candidates_max": 25,
+  "cold_input_validation_fit_seconds": 22.49230919999536,
+  "planning_commit_seconds": [
+    2.901951599982567,
+    2.959104000008665,
+    2.9022627000231296
+  ],
+  "transaction_seconds": [
+    1.2028684000251815,
+    1.2469585000071675,
+    1.1709519000723958
+  ],
+  "cold_total_seconds": 25.39426079997793,
+  "warm_median_seconds": 2.9306833500158973,
+  "warning": "Three local runs, not a p95 SLO or production load test. Warm runs reuse data/model.",
+  "decision_hash": "3d76038fd00ffaa3e6f8f11c354d1096a01e6f3ef26fd4048b6b5db1c7da6925",
+  "quota": {
+    "id": 1,
+    "total": 666666,
+    "consumed": 233558,
+    "reserved": 9076,
+    "free": 424032
+  },
+  "protocol": {
+    "version": "2026-10-28-v1",
+    "contract_start": "2026-01-01",
+    "contract_end": "2026-06-30",
+    "train_end": "2026-02-28",
+    "validation_start": "2026-03-01",
+    "validation_end": "2026-03-31",
+    "test_start": "2026-04-01",
+    "test_end": "2026-04-30",
+    "outcome_delay_days": 2,
+    "sample_weight": 15,
+    "full_a_capacity": 10000000,
+    "full_a_upfront": "10000000",
+    "b_fee": "2.00",
+    "allocation": "equal_lenders",
+    "max_installments": 3,
+    "amount_fractions": [
+      "0.25",
+      "0.50",
+      "0.75",
+      "1.00"
+    ],
+    "a_opportunity_cost": "0.00",
+    "min_cell_attempts": 100,
+    "prior_strength": 100,
+    "conservative_z": 1.0,
+    "seed": 42
+  }
+}

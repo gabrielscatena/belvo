@@ -21,6 +21,9 @@
 | Risk | Heuristic fails to find profitable allocation | Report unmet constraint, never proven infeasibility |
 | Open | Cutoff, timezone, late arrivals and exact latency target | Production receipt timestamps and declared benchmark volume required |
 | Open | Real provider idempotency and reconciliation contract | Verify before real debits |
+| Accepted | Monotonic source revisions per lender/day | Corrected source contents need a higher revision; late retries cannot overwrite newer state |
+| Open | Obtain upstream source ordering metadata | CLI accepts a revision; the case CSVs do not provide one |
+| Open | Operational outcome feedback into training/budgets | Local outcomes can be recorded; offline fitting uses supplied CSV history |
 | Proposal | Shared production DB, receiver and execution worker | Describe deployment only; not infrastructure delivered |
 
 Schema/state failures fail the job before sending; isolated invalid rows do not. Missing

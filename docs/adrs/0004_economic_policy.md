@@ -22,7 +22,8 @@ Selection: start from best B/no-attempt plans, then allocate shared A by contrib
 per unit, first toward lender deficits and then by economic score. Deterministic tie order
 and persisted model hash permit reproduction. The heuristic is not an exact optimizer;
 unmet requirements are reported without asserting infeasibility. Default opportunity cost
-is zero because the sampled observed volume leaves substantial quota; sensitivity varies it.
+is zero in the frozen evaluation. Published sensitivities vary demand, capacity and fixed
+cost allocation; they do not estimate a nonzero opportunity price.
 No separate shadow-price penalty is added. Future online allocation can still be suboptimal.
 
 Lender requirement: `past_known_contribution + today_conservative_contribution +

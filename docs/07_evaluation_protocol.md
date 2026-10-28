@@ -24,6 +24,11 @@ and published monetary totals and daily unmet-constraint counts are unchanged. T
 was also hardened against reconciliation racing a late sender. These are disclosed fixes,
 not additional independent test evidence.
 
+Delivery corrections add ordered source revisions, point-in-time history quarantine and
+immutable model provenance v2. The response estimator and frozen policy parameters are
+unchanged. A new verification checkpoint preserves the original frozen_v1 artifacts;
+model identifiers change because all fitting inputs/configuration are now covered.
+
 Observed attempt/success counts: January 96,181/862; February 86,768/829;
 March 93,380/895; April 93,772/856. These support a temporal evaluation but sparse
 subgroups still require backoff and uncertainty reporting.
