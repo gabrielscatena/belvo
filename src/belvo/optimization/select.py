@@ -5,6 +5,23 @@ from collections import defaultdict
 from belvo.domain import Loan, plans
 
 
+def no_history_decisions(loans, quota, protocol):
+    """No unsupported fallback debits when all available training data is quarantined."""
+    return [
+        {
+            "loan_id": loan.loan_id,
+            "client_id": loan.client_id,
+            "day": loan.day,
+            "version": loan.version,
+            "plan": {"amounts": [], "providers": []},
+            "status": "no_attempt",
+            "reason": "no_available_training_history",
+            "lender_constraint": {"status": "not_evaluated"},
+        }
+        for loan in loans
+    ], quota
+
+
 class EconomicSelector:
     def __init__(self, model, required_today=None, supported_only=True):
         self.model = model

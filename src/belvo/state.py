@@ -4,6 +4,7 @@ import json
 import sqlite3
 import uuid
 from contextlib import contextmanager
+from dataclasses import asdict
 from pathlib import Path
 
 from belvo.config import Protocol
@@ -36,6 +37,12 @@ CREATE TABLE IF NOT EXISTS decision_events(
  id TEXT PRIMARY KEY,payload TEXT NOT NULL,recorded_at TEXT DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE IF NOT EXISTS batches(
  id TEXT PRIMARY KEY,day TEXT NOT NULL,received_at TEXT DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS source_heads(
+ day TEXT,scope TEXT,revision INTEGER NOT NULL,content_hash TEXT NOT NULL,
+ PRIMARY KEY(day,scope));
+CREATE TABLE IF NOT EXISTS history_issues(
+ id TEXT PRIMARY KEY,day TEXT,payload TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS models(id TEXT PRIMARY KEY,payload TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS attempts(
  id TEXT PRIMARY KEY,loan_id TEXT,day TEXT,provider TEXT,amount INTEGER CHECK(amount>0),
  state TEXT CHECK(state IN ('ready','sending','unknown','submitted','cancelled')),
@@ -125,14 +132,94 @@ class Store:
         )
         db.execute("UPDATE quota SET reserved=reserved-? WHERE id=1", (count,))
 
-    def commit_day(self, valid, rejected, raw, day, selector=None, portfolio_clients=None):
+    @staticmethod
+    def _register_source(db, valid, rejected, raw, day, clients, revision):
+        """Content identifies a retry; only the source can order distinct corrections."""
+        if revision is not None and (type(revision) is not int or revision < 1):
+            raise ValueError("Source revision must be a positive integer")
+        if (
+            db.execute("SELECT 1 FROM decisions LIMIT 1").fetchone()
+            and not db.execute("SELECT 1 FROM source_heads LIMIT 1").fetchone()
+        ):
+            raise ValueError("Legacy state has no source ordering; use a new simulation store")
+        entries = [
+            (
+                r["payload"].get("client_id"),
+                r["payload"].get("loan_id"),
+                {"snapshot": r["payload"], "context": r.get("context")},
+            )
+            for r in raw
+        ] or [
+            (r["client_id"], r["loan_id"], r)
+            for r in [*(asdict(loan) for loan in valid), *rejected]
+        ]
+        scopes = {}
+        for client, loan_id, payload in entries:
+            if loan_id:
+                scopes.setdefault("loan:" + loan_id, []).append(payload)
+        for client in clients or ():
+            scopes["client:" + client] = [p for c, _, p in entries if c == client]
+        for old in db.execute("SELECT payload FROM decisions WHERE day=?", (day,)):
+            previous = json.loads(old["payload"])
+            if clients is not None and previous["client_id"] in clients:
+                scopes.setdefault("loan:" + previous["loan_id"], [])
+        identities = {}
+        for scope, payloads in sorted(scopes.items()):
+            identity = fingerprint(sorted(payloads, key=fingerprint))
+            old = db.execute(
+                "SELECT revision,content_hash FROM source_heads WHERE day=? AND scope=?",
+                (day, scope),
+            ).fetchone()
+            # No source sequence is invented from local receipt time or a content hash.
+            number = revision if revision is not None else old["revision"] if old else 1
+            if old and number < old["revision"]:
+                raise ValueError("Stale source revision; latest portfolio remains authoritative")
+            if old and number == old["revision"] and identity != old["content_hash"]:
+                raise ValueError("Changed payload requires a higher source revision")
+            db.execute(
+                "INSERT OR REPLACE INTO source_heads VALUES(?,?,?,?)",
+                (day, scope, number, identity),
+            )
+            identities[scope] = [number, identity]
+        return fingerprint([day, identities])
+
+    def commit_day(
+        self,
+        valid,
+        rejected,
+        raw,
+        day,
+        selector=None,
+        portfolio_clients=None,
+        source_revision=None,
+        history_issues=(),
+        model_artifact=None,
+    ):
         selector = selector or baseline
         with self.transaction() as db:
             latest = db.execute("SELECT value FROM meta WHERE key='latest_day'").fetchone()
             if latest and day < latest[0]:
                 raise ValueError("Cannot rewind live state; replay into a separate database")
+            batch = self._register_source(
+                db, valid, rejected, raw, day, portfolio_clients, source_revision
+            )
+            for issue in history_issues:
+                db.execute(
+                    "INSERT OR IGNORE INTO history_issues VALUES(?,?,?)",
+                    (fingerprint([day, issue]), day, json.dumps(issue)),
+                )
+            if model_artifact is not None:
+                identity = model_artifact["model_hash"]
+                if (
+                    fingerprint({k: v for k, v in model_artifact.items() if k != "model_hash"})
+                    != identity
+                ):
+                    raise ValueError("Invalid model identity")
+                db.execute(
+                    "INSERT OR IGNORE INTO models VALUES(?,?)",
+                    (identity, json.dumps(model_artifact)),
+                )
             db.execute("INSERT OR REPLACE INTO meta VALUES('latest_day',?)", (day,))
-            batch = fingerprint([day, raw])
             db.execute("INSERT OR IGNORE INTO batches(id,day) VALUES(?,?)", (batch, day))
             withdrawals = []
             if portfolio_clients is not None:
@@ -238,6 +325,11 @@ class Store:
                 raise ValueError("Selector must return exactly one decision per pending loan")
             for row in selected:
                 loan = loans_by_id[row["loan_id"]]
+                if (
+                    model_artifact is not None
+                    and row.get("economics", {}).get("model_hash") != identity
+                ):
+                    raise ValueError("Decision must reference its persisted model")
                 amounts, providers = row["plan"]["amounts"], row["plan"]["providers"]
                 if (
                     len(amounts) != len(providers)

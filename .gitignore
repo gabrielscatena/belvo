@@ -20,6 +20,7 @@ htmlcov/
 .venv-mvp-check/
 tmp/pdfs/
 .cache/uv/
+.cache/build-tmp/
 venv/
 .env
 .env.*

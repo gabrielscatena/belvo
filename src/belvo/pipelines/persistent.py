@@ -15,6 +15,7 @@ def main():
     parser.add_argument("--date", required=True)
     parser.add_argument("--data-dir", type=Path, default=Path("data/raw"))
     parser.add_argument("--config", default="conf/protocol.json")
+    parser.add_argument("--output", type=Path)
     parser.add_argument("--state", type=Path, default=Path("artifacts/runtime/engine.sqlite"))
     parser.add_argument(
         "--provider-state", type=Path, default=Path("artifacts/runtime/simulator.sqlite")
@@ -23,7 +24,14 @@ def main():
     parser.add_argument("--reconcile", action="store_true")
     parser.add_argument("--policy", choices=["baseline", "economic"], default="baseline")
     parser.add_argument("--client", help="Restrict to this lender's full daily portfolio")
+    parser.add_argument(
+        "--source-revision",
+        type=int,
+        help="Positive upstream revision per lender/day; corrections must increase it",
+    )
     args = parser.parse_args()
+    if args.source_revision is not None and args.source_revision < 1:
+        parser.error("Source revision must be positive")
     try:
         if date.fromisoformat(args.date).isoformat() != args.date:
             raise ValueError("Noncanonical date")
@@ -47,30 +55,83 @@ def main():
         valid = [loan for loan in valid if loan.client_id == args.client]
         rejected = [r for r in rejected if r["client_id"] == args.client]
         raw = [r for r in raw if r["payload"].get("client_id") == args.client]
-    selector = None
+    selector, model_artifact, model_path, history_issues = None, None, None, []
     if args.policy == "economic":
         from belvo.models.empirical import fit_for_day, load_history
-        from belvo.optimization.select import EconomicSelector, zero_future_budget
-
-        history = load_history(args.data_dir)
-        model = fit_for_day(history, p, args.date)
-        selector = EconomicSelector(
-            model,
-            zero_future_budget(
-                history, args.date, p, clients={r["client_id"] for r in client_rows}
-            ),
+        from belvo.optimization.select import (
+            EconomicSelector,
+            no_history_decisions,
+            zero_future_budget,
         )
-        selector.prepare(valid, p)
-        model.save(args.state.with_suffix(".model.json"))
-    decisions = store.commit_day(valid, rejected, raw, args.date, selector, portfolio_clients)
+
+        history = load_history(
+            args.data_dir,
+            before=args.date,
+            quarantine=True,
+            known_through=p.known_attempt_through(args.date),
+        )
+        history_issues = history.attrs["quarantine"]
+        blocked = {r["loan_id"] for r in history_issues}
+        for loan in valid:
+            if loan.loan_id in blocked:
+                rejected.append(
+                    {
+                        "loan_id": loan.loan_id,
+                        "client_id": loan.client_id,
+                        "day": loan.day,
+                        "version": loan.version,
+                        "status": "quarantined",
+                        "reason": "invalid_history",
+                        "plan": {"amounts": [], "providers": []},
+                    }
+                )
+        valid = [loan for loan in valid if loan.loan_id not in blocked]
+        model = fit_for_day(history, p, args.date, allow_empty=True)
+        if model is None:
+            selector = no_history_decisions
+        else:
+            requirements = zero_future_budget(
+                history, args.date, p, clients={r["client_id"] for r in client_rows}
+            )
+            affected = {r.get("client_id") for r in history_issues}
+            # Missing historical ownership prevents attributing the accounting gap.
+            if None in affected or "" in affected:
+                requirements = {}
+            else:
+                requirements = {k: v for k, v in requirements.items() if k not in affected}
+            selector = EconomicSelector(model, requirements)
+            selector.prepare(valid, p)
+            model_path = args.state.with_suffix(".models") / (model.model_hash + ".json")
+            model.save(model_path)
+            model_artifact = model.artifact() | {"model_hash": model.model_hash}
+    decisions = store.commit_day(
+        valid,
+        rejected,
+        raw,
+        args.date,
+        selector,
+        portfolio_clients,
+        args.source_revision,
+        history_issues,
+        model_artifact,
+    )
     if args.execute:
         execute(store, provider, args.date)
-    output = Path("reports/pipeline") / datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    output = args.output or Path("reports/pipeline") / datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     export(
         output,
         decisions,
         raw,
-        {"protocol": p.values, "quota": store.quota(), "state": str(args.state), "simulated": True},
+        {
+            "protocol": p.values,
+            "quota": store.quota(),
+            "state": str(args.state),
+            "simulated": True,
+            "source_revision": args.source_revision,
+            "history_quarantine": history_issues,
+            "model_hash": None if model_artifact is None else model_artifact["model_hash"],
+            "model_path": None if model_path is None else str(model_path),
+        },
     )
     print(
         json.dumps(

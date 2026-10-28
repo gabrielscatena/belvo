@@ -2,52 +2,22 @@
 
 import json
 import math
+import os
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
 
 from belvo.config import Protocol, commission_percent
-from belvo.domain import Loan, Plan, cents, fingerprint
+from belvo.data.history import load_history
+from belvo.domain import Loan, Plan, fingerprint
+
+__all__ = ["EmpiricalModel", "Estimate", "fit_for_day", "load_history"]
 
 
 def fraction_bin(total: int, feasible: int) -> int:
     return min(4, max(1, int(total * 4 / max(feasible, 1) + 0.5)))
-
-
-def load_history(data: Path) -> pd.DataFrame:
-    a = pd.read_csv(data / "payment_attempts.csv", dtype=str)
-    s = pd.read_csv(data / "loan_snapshots.csv", dtype=str)
-    c = pd.read_csv(data / "clients.csv", dtype=str)
-    if a.attempt_id.duplicated().any() or s.duplicated(["loan_id", "snapshot_date"]).any():
-        raise ValueError("Ambiguous historical keys; run the EDA audit")
-    a = a.merge(
-        s[["loan_id", "snapshot_date", "client_id", "outstanding_balance", "days_past_due"]],
-        left_on=["loan_id", "attempt_date"],
-        right_on=["loan_id", "snapshot_date"],
-        validate="many_to_one",
-        how="left",
-    )
-    a = a.merge(c, on="client_id", validate="many_to_one", how="left")
-    if a.outstanding_balance.isna().any() or a.max_installment_amount.isna().any():
-        raise ValueError("Unattributable history")
-    for source, target in (
-        ("amount", "amount_cents"),
-        ("outstanding_balance", "balance_cents"),
-        ("max_installment_amount", "cap_cents"),
-    ):
-        a[target] = a[source].map(cents)
-    a["count"] = a.installment_count.astype(int)
-    a["dpd"] = a.days_past_due.astype(int)
-    a["band"] = a.dpd.map(commission_percent)
-    groups = a.groupby(["loan_id", "attempt_date"])
-    a["plan_total"] = groups.amount_cents.transform("sum")
-    a["pure"] = groups.provider.transform("nunique").eq(1)
-    a["fraction"] = [
-        fraction_bin(t, min(b, n * cap))
-        for t, b, n, cap in zip(a.plan_total, a.balance_cents, a["count"], a.cap_cents, strict=True)
-    ]
-    return a
 
 
 @dataclass(frozen=True)
@@ -66,10 +36,13 @@ class EmpiricalModel:
         self.fitted_through = ""
         self.global_rate = 0.0
         self.training_hash = ""
+        self.model_hash = ""
         self._estimate_cache = {}
 
     def fit(self, frame: pd.DataFrame, through: str):
         self._estimate_cache.clear()
+        self.cells.clear()
+        self.parents.clear()
         sample = frame.loc[frame.attempt_date.le(through) & frame.pure].copy()
         if sample.empty:
             raise ValueError("No available training labels; use the deterministic baseline")
@@ -78,7 +51,19 @@ class EmpiricalModel:
         sample["y"] = sample.status.eq("success").astype(int)
         self.global_rate = float(sample.y.mean())
         self.fitted_through = through
-        self.training_hash = fingerprint(sample[["attempt_id", "status"]].values.tolist())
+        features = [
+            "attempt_id",
+            "attempt_date",
+            "client_id",
+            "provider",
+            "count",
+            "band",
+            "fraction",
+            "status",
+            "pure",
+        ]
+        training = sample[features].sort_values("attempt_id")
+        self.training_hash = fingerprint(json.loads(training.to_json(orient="records")))
         for columns, target in (
             (["provider", "count", "band"], self.parents),
             (["client_id", "provider", "count", "band", "fraction"], self.cells),
@@ -86,6 +71,7 @@ class EmpiricalModel:
             for key, group in sample.groupby(columns, sort=True):
                 native_key = tuple(v.item() if hasattr(v, "item") else v for v in key)
                 target[native_key] = (int(group.y.sum()), len(group))
+        self.model_hash = fingerprint(self.artifact())
         return self
 
     def estimate(self, loan: Loan, plan: Plan, provider: str) -> Estimate:
@@ -128,10 +114,12 @@ class EmpiricalModel:
             "min_cell_n": min((e.n for e in estimates), default=0),
             "model_through": self.fitted_through,
             "training_hash": self.training_hash,
+            "model_hash": self.model_hash,
         }
 
-    def save(self, path: Path):
-        obj = {
+    def artifact(self):
+        return {
+            "format": "belvo.empirical.v2",
             "fitted_through": self.fitted_through,
             "global_rate": self.global_rate,
             "training_hash": self.training_hash,
@@ -139,11 +127,49 @@ class EmpiricalModel:
             "cells": [[list(k), list(v)] for k, v in self.cells.items()],
             "parents": [[list(k), list(v)] for k, v in self.parents.items()],
         }
+
+    @classmethod
+    def from_artifact(cls, obj):
+        payload = {k: v for k, v in obj.items() if k != "model_hash"}
+        if (
+            payload.get("format") != "belvo.empirical.v2"
+            or fingerprint(payload) != obj["model_hash"]
+        ):
+            raise ValueError("Invalid or corrupted model artifact")
+        model = cls(Protocol(payload["protocol"]))
+        model.fitted_through = payload["fitted_through"]
+        model.global_rate = payload["global_rate"]
+        model.training_hash = payload["training_hash"]
+        model.model_hash = obj["model_hash"]
+        model.cells = {tuple(k): tuple(v) for k, v in payload["cells"]}
+        model.parents = {tuple(k): tuple(v) for k, v in payload["parents"]}
+        return model
+
+    def save(self, path: Path):
+        """Publish a complete immutable artifact, including under concurrent writers."""
+        obj = self.artifact() | {"model_hash": self.model_hash}
+        if fingerprint(self.artifact()) != self.model_hash:
+            raise ValueError("Model changed after fitting")
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(obj, indent=2), encoding="utf-8")
+        with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(json.dumps(obj, indent=2).encode("utf-8"))
+            stream.flush()
+            os.fsync(stream.fileno())
+        try:
+            try:
+                if os.name == "nt":
+                    os.rename(temporary, path)  # Windows rename atomically refuses replacement.
+                else:
+                    os.link(temporary, path)
+            except FileExistsError:
+                if json.loads(path.read_text(encoding="utf-8")) != obj:
+                    raise ValueError("Refusing to overwrite a different model artifact") from None
+        finally:
+            temporary.unlink(missing_ok=True)
 
 
-def fit_for_day(frame, protocol, day):
+def fit_for_day(frame, protocol, day, *, allow_empty=False):
     fit_start = (
         protocol.values["validation_start"]
         if day <= protocol.values["validation_end"]
@@ -157,4 +183,6 @@ def fit_for_day(frame, protocol, day):
     cutoff = min(
         protocol.known_attempt_through(day), protocol.known_attempt_through(fit_start), fit_end
     )
+    if allow_empty and not (frame.attempt_date.le(cutoff) & frame.pure).any():
+        return None
     return EmpiricalModel(protocol).fit(frame, cutoff)

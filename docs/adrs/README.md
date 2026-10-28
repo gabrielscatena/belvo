@@ -9,3 +9,4 @@ already selected during the voice discussion.
 | [0002](0002_versioned_validation.md) | Accepted | Versioned quarantine and automatic validation |
 | [0003](0003_local_transactional_store.md) | Accepted | Python/SQLite, atomic reservation and outbox |
 | [0004](0004_economic_policy.md) | Accepted for prototype | Empirical plan probabilities and constrained greedy selection |
+| [0005](0005_source_order_and_model_evidence.md) | Accepted for prototype | Ordered source corrections, isolated history and immutable model evidence |

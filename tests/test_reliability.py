@@ -61,13 +61,17 @@ s.commit_day([l],[],[],'2026-04-01')
 def test_full_portfolio_withdrawal_and_reappearance_before_submission(root):
     store = Store(root / "state.db", Protocol.load(), capacity=2)
     store.commit_day([loan()], [], [], "2026-04-01", portfolio_clients={"C1"})
-    withdrawn = store.commit_day([], [], [], "2026-04-01", portfolio_clients={"C1"})
+    withdrawn = store.commit_day(
+        [], [], [], "2026-04-01", portfolio_clients={"C1"}, source_revision=2
+    )
     assert withdrawn[0]["status"] == "withdrawn" and store.quota()["reserved"] == 0
-    store.commit_day([loan()], [], [], "2026-04-01", portfolio_clients={"C1"})
+    store.commit_day([loan()], [], [], "2026-04-01", portfolio_clients={"C1"}, source_revision=3)
     assert store.quota()["reserved"] == 1
     # Identical data can reappear: reactivate only proven unsent intents.
-    store.commit_day([loan(version="v2")], [], [], "2026-04-01", portfolio_clients={"C1"})
-    store.commit_day([loan()], [], [], "2026-04-01", portfolio_clients={"C1"})
+    store.commit_day(
+        [loan(version="v2")], [], [], "2026-04-01", portfolio_clients={"C1"}, source_revision=4
+    )
+    store.commit_day([loan()], [], [], "2026-04-01", portfolio_clients={"C1"}, source_revision=5)
     assert store.quota()["reserved"] == 1
     provider = SimulatedProvider(root / "provider.db")
     execute(store, provider, "2026-04-01")
@@ -81,7 +85,7 @@ def test_withdrawal_does_not_release_unknown_and_scope_is_lender_specific(root):
     execute(store, provider, "2026-04-01", "timeout_after")
     store.commit_day([], [], [], "2026-04-01", portfolio_clients={"C2"})
     assert store.quota()["reserved"] == 1
-    store.commit_day([], [], [], "2026-04-01", portfolio_clients={"C1"})
+    store.commit_day([], [], [], "2026-04-01", portfolio_clients={"C1"}, source_revision=2)
     assert store.quota()["reserved"] == 1
     reconcile(store, provider)
     assert store.quota()["consumed"] == 1
@@ -134,7 +138,7 @@ def test_store_rejects_valid_identity_plan_that_overbooks_capacity(root):
 def test_decision_versions_and_receipts_are_auditable(root):
     store = Store(root / "state.db", Protocol.load(), capacity=2)
     store.commit_day([loan()], [], [], "2026-04-01")
-    store.commit_day([loan(version="v2")], [], [], "2026-04-01")
+    store.commit_day([loan(version="v2")], [], [], "2026-04-01", source_revision=2)
     with store.connect() as db:
         assert db.execute("SELECT count(*) FROM decision_events").fetchone()[0] == 2
         assert db.execute("SELECT received_at FROM batches").fetchone()[0]
@@ -184,7 +188,7 @@ def test_cap_correction_automatically_revalidates_same_snapshot(root):
     valid, rejected, raw = validate([snapshot], {}, "2026-04-01")
     store.commit_day(valid, rejected, raw, "2026-04-01")
     valid, rejected, raw = validate([snapshot], {"C1": 200}, "2026-04-01")
-    decisions = store.commit_day(valid, rejected, raw, "2026-04-01")
+    decisions = store.commit_day(valid, rejected, raw, "2026-04-01", source_revision=2)
     assert decisions[0]["status"] == "attempt"
     assert max(decisions[0]["plan"]["amounts"]) <= 200
 

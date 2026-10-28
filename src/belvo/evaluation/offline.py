@@ -99,6 +99,20 @@ def audit_outputs(output: Path):
     summary["legacy_estimated_margin_error"] = (
         summary["legacy_estimated_april_margin"] - summary["legacy_observed_april_margin"]
     )
+    summary["same_model_estimated_uplift"] = (
+        summary["candidate_estimated_april_margin"] - summary["legacy_estimated_april_margin"]
+    )
+    summary["legacy_attempts_april"] = int(lenders.legacy_a.sum() + lenders.legacy_b.sum())
+    summary["candidate_attempts_april"] = int(
+        summary["candidate_a_units"] + summary["candidate_b_units"]
+    )
+    summary["candidate_to_legacy_attempt_ratio"] = (
+        summary["candidate_attempts_april"] / summary["legacy_attempts_april"]
+        if summary["legacy_attempts_april"]
+        else None
+    )
+    model = json.loads((output / "model.json").read_text(encoding="utf-8"))
+    summary["model_hash"] = model.get("model_hash")
     summary["rollout_approved"] = False
     summary["rollout_blockers"] = [
         f"Exact legacy action match {summary['exact_legacy_action_match_fraction']:.2%}; coarse cells are not causal support",
@@ -116,6 +130,17 @@ def audit_outputs(output: Path):
     text += "historical bin support is substantially weaker than intervention identification.\n"
     text += f"Legacy monetary margin error is {summary['legacy_estimated_margin_error']:,.2f}. "
     text += "The very large projected uplift is not established business value.\n"
+    text += f"Same-model candidate minus legacy estimate: {summary['same_model_estimated_uplift']:,.2f}. "
+    text += "This is a conditional model-based difference, not measured causal uplift.\n"
+    text += f"Candidate attempts: {summary['candidate_attempts_april']:,}; "
+    text += f"legacy attempts: {summary['legacy_attempts_april']:,}. "
+    ratio = summary["candidate_to_legacy_attempt_ratio"]
+    text += (
+        f"Volume ratio: {ratio:.2f}x.\n"
+        if ratio is not None
+        else "No legacy attempts for a volume ratio.\n"
+    )
+    text += "Prepaid capacity is enforced; opportunity cost is configurable but zero in the frozen run.\n"
     text += f"Nonpositive full-upfront coverage lenders: {summary['negative_candidate_lenders_coverage']}.\n"
     text += "May-June continuation scenarios that exceed quota are explicitly marked infeasible;\n"
     text += "they cannot justify a constant-composition contract projection.\n"

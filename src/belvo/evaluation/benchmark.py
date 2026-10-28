@@ -25,11 +25,13 @@ def main():
     parser.add_argument("--data-dir", type=Path, default=Path("data/raw"))
     parser.add_argument("--date", default="2026-04-01")
     parser.add_argument("--config", default="conf/protocol.json")
-    parser.add_argument("--output", type=Path, default=Path("reports/validation/benchmark.json"))
+    parser.add_argument("--output", type=Path, default=Path("reports/validation/benchmark_v2.json"))
     args = parser.parse_args()
     started = perf_counter()
     protocol = Protocol.load(args.config)
-    history = load_history(args.data_dir)
+    history = load_history(
+        args.data_dir, before=args.date, known_through=protocol.known_attempt_through(args.date)
+    )
     model = fit_for_day(history, protocol, args.date)
     required = zero_future_budget(history, args.date, protocol)
     valid, rejected, raw = load_day(args.data_dir, args.date)
@@ -45,7 +47,16 @@ def main():
             selector.prepare(valid, protocol)
             store = Store(Path(folder) / "engine.db", protocol, consumed=initial)
             commit_started = perf_counter()
-            decisions = store.commit_day(valid, rejected, raw, args.date, selector)
+            decisions = store.commit_day(
+                valid,
+                rejected,
+                raw,
+                args.date,
+                selector,
+                portfolio_clients={loan.client_id for loan in valid},
+                source_revision=1,
+                model_artifact=model.artifact() | {"model_hash": model.model_hash},
+            )
             commit_timings.append(perf_counter() - commit_started)
             timings.append(perf_counter() - start)
             hashes.append(fingerprint(decisions))
