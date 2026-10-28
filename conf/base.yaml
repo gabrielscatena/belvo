@@ -1,0 +1,8 @@
+# Non-sensitive configuration settings (customize for your project).
+project:
+  seed: 42
+paths:
+  raw: data/raw
+  interim: data/interim
+  processed: data/processed
+  models: artifacts/models

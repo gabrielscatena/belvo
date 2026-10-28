@@ -1,0 +1,9 @@
+# Real datasets should not be tracked by Git by default.
+/raw/**
+/interim/**
+/processed/**
+/external/**
+!/raw/.gitkeep
+!/interim/.gitkeep
+!/processed/.gitkeep
+!/external/.gitkeep

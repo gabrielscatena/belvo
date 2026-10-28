@@ -1,2 +1,2 @@
 # belvo
-Take-home challenge Senior Applied Data Scientist -Technical Challenge Smart Collections Engine
+Intelligent debt collection decision engine: predictive modeling, constrained optimization, and system design.
