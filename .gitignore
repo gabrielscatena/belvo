@@ -31,3 +31,6 @@ venv/
 # Generated runtime artifacts
 logs/
 **/*.log
+reports/pipeline/
+reports/implementation/stage3_daily/decisions.*
+reports/implementation/stage3_daily/source_versions.json

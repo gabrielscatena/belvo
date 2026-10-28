@@ -1,0 +1,39 @@
+{
+  "day": "2026-04-01",
+  "protocol": {
+    "version": "2026-10-28-v1",
+    "contract_start": "2026-01-01",
+    "contract_end": "2026-06-30",
+    "train_end": "2026-02-28",
+    "validation_start": "2026-03-01",
+    "validation_end": "2026-03-31",
+    "test_start": "2026-04-01",
+    "test_end": "2026-04-30",
+    "outcome_delay_days": 2,
+    "sample_weight": 15,
+    "full_a_capacity": 10000000,
+    "full_a_upfront": "10000000",
+    "b_fee": "2.00",
+    "allocation": "equal_lenders",
+    "max_installments": 3,
+    "amount_fractions": [
+      "0.25",
+      "0.50",
+      "0.75",
+      "1.00"
+    ],
+    "a_opportunity_cost": "0.00",
+    "min_cell_attempts": 100,
+    "prior_strength": 100,
+    "conservative_z": 1.0,
+    "seed": 42
+  },
+  "policy": "feasibility-v1",
+  "valid": 4640,
+  "quarantined": 0,
+  "a_remaining": 662026,
+  "known_attempts": 269124,
+  "history_through": "2026-03-30",
+  "source_hash": "3f9db99cb450c51c91ea9c099aacc0c5a42785e4f2872912a388951f27ce17d6",
+  "decisions_hash": "16e431f703051156030280c2506c40e95d06f643c014fd17c2d697c14e268a8d"
+}
