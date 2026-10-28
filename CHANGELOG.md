@@ -55,3 +55,4 @@ are measured work intervals, not estimates inferred from commits.
 | Stage | Start | End | Minutes | Context → Action → Result |
 |---|---|---|---:|---|
 | 1 | 14:09:30 | 14:14:28 | 4.97 | Resolve architecture ambiguity → validate case/reviews and specify contracts/ADRs → minimal transactional boundary and explicit assumptions. |
+| 2 | 14:14:37 | 14:15:59 | 1.37 | Prevent evaluation leakage → freeze temporal/economic protocol and boundary tests → 14 tests pass, lender allocation fixed before test. |

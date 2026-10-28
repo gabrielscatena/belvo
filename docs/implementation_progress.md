@@ -5,7 +5,7 @@ implementation intervals, excluding commit/push overhead. The on-screen checklis
 updated after successful synchronization.
 
 1. Architecture and ADRs: contracts formalized; Python/SQLite decision justified.
-2. Protocol and economic configuration: pending.
+2. Protocol and economic configuration: frozen v1, conservative D−2 history, temporal holdout and equal lender cost weights.
 3. Local pipeline: pending.
 4. State, reservations and recovery: pending.
 5. Economic selection: pending.
