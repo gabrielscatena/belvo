@@ -36,29 +36,32 @@ The daily command exports one decision/status per received loan to `reports/pipe
 
 Use separate state for each policy/version or backward-date experiment. Retries retain source revision and contents; authoritative same-day corrections increase `--source-revision` per lender/day. `--client C01` scopes a complete portfolio. Preserve earlier state and outputs. Diagnostic commands and recovery: [runbook](docs/08_runbook.md).
 
-## Evidence and its limits
+## Findings
 
-The original [frozen evaluation](reports/evaluation/frozen_v1/results.md) and [verified reproduction](reports/evaluation/verified_v2/results.md) remain intact. The [current replay](reports/evaluation/selector_v3/results.md) fixes selection after April inspection, with **identical fitted response probabilities**. It is an engineering revision, not a new untouched holdout.
+The original [frozen evaluation](reports/evaluation/frozen_v1/results.md) and [verified reproduction](reports/evaluation/verified_v2/results.md) remain intact. New evaluations are disclosed post-inspection sensitivities with the same fitted response model, not new untouched tests.
 
-| April net margin, sampled portfolio, same allocated prepaid expense | Currency units |
+| Evidence, sampled portfolio | Finding |
 |---|---:|
-| Observed legacy | 80,758.24 |
-| Same-model estimated legacy | 107,146.78 |
-| Candidate scenario after selector correction | 1,233,760.38 |
-| Candidate downside stress score | 724,993.83 |
-| Relaxed same-model ceiling | 1,257,322.98 |
+| Observed April legacy net margin | 80,758.24 |
+| Demonstrated candidate improvement | Not established |
+| April A use / April 1 remaining capacity | 291,698 / 433,108 = 67.35% |
+| April days / remaining contract days | 30 / 91 |
+| B attempts on ordinary calendar days | 36,568 |
+| Historical B observations on those date types | 665, all in January |
 
-All rows subtract 30/181 of the same A commitment with equal fixed lender weights. [Per-lender amounts](reports/evaluation/selector_v3/per_client.csv) reconcile. C11 is positive in this estimated April view but negative in Jan-Apr coverage with the whole commitment charged; this does not prove six-month infeasibility.
+The observed margin subtracts 30/181 of A's upfront commitment with equal fixed lender weights. Monthly comparisons do not establish contract-horizon value: the candidate spends 67% of the remaining capacity in 33% of the remaining days. The same fixed expense cancels in a policy difference; future opportunity cost remains unmeasured. C11's full-upfront Jan-Apr coverage is negative, without proving final six-month infeasibility.
 
 Three checks explain why the apparent gain is not a business forecast:
 
 - **Model adequacy:** [real-data calibration](reports/evaluation/calibration_v1/calibration_slices.csv) overestimates commission on April ordinary calendar days by 27.6%; amount-bucket errors are uneven. The estimator omits absolute amount, calendar and observed loan history as predictors.
-- **Action support:** only 5.96% of candidate loan-day actions exactly match legacy. Of 333,851 candidate attempts, 91,149 have zero training observations in the expanded lender/provider/plan/DPD/fraction/calendar/amount cell. Coarse support does not establish causal overlap.
+- **Action support:** only 5.96% of candidate loan-day actions exactly match legacy. Of 333,851 candidate attempts, 91,149 have zero expanded joint-cell observations. A nonzero calendar count concealed January-only B coverage; [revised diagnostics](reports/evaluation/calibration_v2/candidate_support.csv) distinguish any-history counts from recent monthly support.
 - **Known truth:** [synthetic stress](reports/validation/synthetic_stress_v1.json) makes providers equally effective while success varies with amount/calendar. Estimated candidate commission is **2.43 times** true expected commission. This demonstrates a failure mode, not Belvo's bias factor. The candidate still beats the sparse synthetic legacy under that generator.
 
-[Training-cluster refits](reports/evaluation/refit_v1/summary.json) add parameter variation: fixed-action candidate margin spans 1.06M-1.52M across empirical 2.5-97.5 percentiles. Twenty refits give coarse tails; these are not business confidence bounds and exclude structural bias, confounding and changed future balances. No causal uplift or realistic sequential ceiling is established.
+[Horizon sensitivities](reports/evaluation/horizon_v1/summary.json) compare unrestricted capacity with cumulative daily budgets at 0.75/1/1.25 times even release through June 30, with and without recent-calendar admission. Both policies receive the same schedule in separate quota ledgers. Filtering logged legacy actions creates a hypothetical replay, never a replacement for observed legacy. These are April diagnostics, not six-month forecasts.
 
-A uses 291,698 April units, leaving 141,410 after prior observed consumption. Tested May-June continuations exceed that remainder; infeasible projections stay null. Daily capacity is enforced; demand-aware pacing and operational learning/budget feedback remain open. [Economic views](reports/evaluation/economic_views_v1/README.md) separate fixed-cost allocation, usage diagnostics and opportunity penalties without double counting.
+Pacing alone shifts more attempts into unsupported B calendar categories; combining it with recent admission materially reduces the model estimate. **C07 and C11 become negative in estimated April margin under even release plus admission.** No variant establishes the business objective or is selected for production.
+
+Conditional money estimates, refit percentiles and the algebraic model bound remain in [results](docs/09_results.md) for audit. None supplies a credible causal gain range or realistic sequential ceiling. Contract-wide capacity is enforced cumulatively; optimal pacing and operational learning/budget feedback remain open. [Economic views](reports/evaluation/economic_views_v1/README.md) separate cost allocations and opportunity penalties.
 
 ## Architecture and verification
 
@@ -66,7 +69,7 @@ Receiver/validation → planner/scorer → SQLite decisions, quota and outbox �
 
 Selection, reservations and send intents commit atomically. Stable identities prevent duplicate simulated effects. Failed payments consume A; unknown delivery retains reservations until authoritative reconciliation. Corrections are automatically revalidated; submitted/uncertain effects stay protected. Immutable source versions and model hashes explain each decision.
 
-**105 tests pass** in a newly installed Python 3.12 environment through the corrected Makefile; Ruff and dependency checks pass. Tests cover money, selection, availability, concurrent reservations/dispatch, recovery, duplicates, corrections and expiry. [Validation](docs/10_validation.md) separates current evidence from historical checkpoints. For 4,640 loans: **27.52s cold** and **3.08s warm planning/commit median**; dispatch/export/network are excluded. Three local runs are not a production SLO.
+**119 tests pass** in a newly installed Python 3.12 environment through the corrected Makefile; Ruff and dependency checks pass. Tests cover money, selection, availability, concurrent reservations/dispatch, recovery, duplicates, corrections and expiry. [Validation](docs/10_validation.md) separates current evidence from historical checkpoints. For 4,640 loans: **27.52s cold** and **3.08s warm planning/commit median**; dispatch/export/network are excluded. Three local runs are not a production SLO.
 
 Recommendation: shadow only, then lender-level calibration/support work and a capped randomized pilot before a live improvement claim.
 

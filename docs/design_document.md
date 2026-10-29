@@ -96,18 +96,18 @@ January-February train, March validates, and final probabilities use labels thro
 testing. No response-model hyperparameters were retuned. The 1-in-15 sample uses
 floor(10M/15) A units and 10M/15 upfront; scaling by 15 is only a point extrapolation.
 
-| April net margin, same population / fixed lender weights | Currency units |
+| Evidence, sampled portfolio | Finding |
 |---|---:|
-| Observed legacy | 80,758.24 |
-| Same-model estimated legacy | 107,146.78 |
-| Corrected-selector candidate scenario | 1,233,760.38 |
-| Candidate downside stress score | 724,993.83 |
-| Relaxed same-model ceiling | 1,257,322.98 |
+| Observed April legacy net margin | 80,758.24 |
+| Demonstrated improvement / sequential ceiling | Not established |
+| April A use / remaining April 1 capacity | 67.35% |
+| April share of remaining contract days | 30 / 91 |
+| Ordinary-day B attempts / supporting history | 36,568 / 665, January only |
 
-All rows charge 30/181 of the same commitment and reconcile by lender. C11 is positive
-in estimated April but negative in full-upfront Jan-Apr coverage. Missing May-June demand,
-response uncertainty and cost allocation prevent a six-month profitability conclusion.
-Alternative fixed lender weights and nominal usage diagnostics are published separately.
+Observed margin charges 30/181 of upfront and reconciles by lender. Candidate use anticipates
+capacity relative to an even schedule. Identical fixed costs cancel in the policy difference;
+future opportunity cost is unmeasured. C11's full-upfront Jan-Apr coverage is negative;
+May-June demand and cost attribution prevent a final lender-profitability conclusion.
 
 April has 140,710 loan-days across 6,233 loans. Candidate volume is 333,851 attempts versus
 93,772 legacy; only 5.96% of loan-day actions match. Expanded amount/calendar cells contain
@@ -116,21 +116,22 @@ calendar-day commission is overestimated 27.6%; amount-bucket errors vary substa
 A known-truth amount/calendar stress with provider-neutral response gives **2.43x** candidate
 commission optimism. This is a structural counterexample, not Belvo's measured bias factor.
 
-Twenty training-loan-cluster refits put fixed-action candidate margin at empirical
-2.5-97.5 percentiles of 1.06M-1.52M. Tails are coarse. This excludes model misspecification,
-confounding, policy reselection, future balances and demand. Neither refits nor the downside
-stress establish a credible business-gain range. The relaxed fitted-model ceiling drops
-capacity coupling/lender constraints; a realistic sequential six-month ceiling is unidentified.
+Twenty training-cluster refits quantify conditional parameter variation only; detailed
+percentiles and model-only money estimates stay in the results appendix. They exclude
+misspecification, confounding, policy reselection, future balances and demand. The fitted-model
+relaxation is not a realistic achievable ceiling; the sequential contract ceiling is unidentified.
 
-April consumes 291,698 A units, leaving 141,410 after prior use. Every tested May-June
-fixed-action continuation exceeds that remainder; infeasible margins remain null. Daily
-selection enforces capacity but does not establish optimal contract-horizon allocation.
-A scarcity price is configurable and zero in the frozen evaluation; forcing zero unused
-units at expiry is not an optimality criterion.
+New sensitivities release capacity cumulatively through June at 0.75/1/1.25 times an even
+schedule, independently for both policies. Neutral release admits at most 142,782 A units
+in April. A recent-calendar gate excludes January-only coverage. Filtered logged actions
+are hypothetical replay, not observed legacy. These comparisons test chosen budgets,
+not optimal pacing or a contract forecast.
+Capacity remains protected between days; forcing zero unused units at expiry proves no optimum.
+Neutral pacing plus recent admission gives negative estimated April margins for C07 and C11.
 
-Fresh locked setup, 105 tests, lint and dependency checks pass. Tests cover accounting,
+Fresh locked setup, 119 tests, lint and dependency checks pass. Tests cover accounting,
 selection, time availability, concurrency, recovery, uncertain submission, corrections and
 expiry. **Recommendation: shadow only.** Validate response features and overlap on new
 prospective evidence, close runtime feedback and test a capped randomized pilot before
 claiming causal improvement. Reproduce via README; evidence: docs/09_results.md,
-reports/evaluation/selector_v3, calibration_v1, refit_v1 and reports/validation/benchmark_v3.json.
+reports/evaluation/horizon_v1, calibration_v2 and reports/validation/benchmark_v3.json.

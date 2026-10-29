@@ -79,3 +79,18 @@ infeasibility. No policy is approved for live use from offline projected uplift 
 Acceptance: exact feasible cents/caps; no future-label use; capacity never negative; no
 duplicate loan-day submission; margins reconcile by lender; identical financial convention;
 all assumptions and failed lender constraints visible; clean executable reproduction.
+
+## Post-inspection horizon and calendar sensitivities
+
+The original protocol/results remain frozen. Additional April diagnostics vary cumulative
+A release through June 30 (0.75/1/1.25 times an even release) and recent calendar admission.
+Both candidate and filtered logged legacy get identical release/admission rules, with
+separate consumption ledgers; whole logged plans are ranked without outcomes. Their
+retained observed cash is subset accounting on fixed legacy states, not an observed or
+identified counterfactual policy result. The original observed legacy benchmark remains.
+
+Calendar admission uses only pure historical attempts available by the fitted cutoff:
+at least 100 observations in at least one of the last two calendar months, separately
+for each provider/date type. The cutoff month may be partial. This is a declared coverage
+assumption, not a causal-support guarantee or retuned response model. Thresholds and
+release rates are sensitivities; none was selected as an optimal policy using April.

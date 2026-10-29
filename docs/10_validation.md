@@ -88,3 +88,23 @@ The parameter-refit point reproduces current headline margins within 0.000001. S
 stress and expanded real-data calibration expose unresolved response inadequacy; test
 success is engineering evidence, not evidence of causal economic gain. See ADR 0006 and
 the [claim-by-claim review](11_external_review.md).
+
+## Follow-up horizon and admission verification - 2026-10-29
+
+Current full suite: **119 tests passed in 26.19s** through the Makefile; Ruff and dependency
+checks pass. Six focused horizon regressions also pass after sharing immutable daily
+scoring across variants. Tests cover integer cumulative release, carryover/expiry, complete
+status-independent logged-plan admission, exact money, failed B fees and prior overage.
+
+[Eight real-data scenarios](../reports/evaluation/horizon_v1/summary.json) completed in
+275.75s. All 240 daily rows respect independent candidate/legacy release and physical
+capacity invariants. The 96 lender/scenario rows reconcile to their scenario totals.
+The unrestricted control reproduces selector_v3 with the identical model and source hashes;
+all earlier checkpoints remain unchanged. Recent admission eliminates ordinary-day B in
+all gated scenarios. Twenty-one primary/ADR documents have no broken local links; all
+three final PDF pages were rendered and visually checked.
+
+Neutral release plus admission has negative estimated April margins for C07/C11. These
+are reported outcomes, not a failed test hidden by changing the rule. Detailed checks are
+in [follow-up evidence](../reports/validation/followup_review_v1.json). No scenario proves
+causal improvement, optimal pacing or six-month profitability; runtime defaults are unchanged.

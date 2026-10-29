@@ -1,0 +1,73 @@
+{
+  "recorded_at": "2026-10-29T16:33:45.298342-03:00",
+  "review_baseline": "ad9ad1e9de7a913b2a3dc2605b7130ac4971720d",
+  "full_tests": {
+    "passed": 119,
+    "seconds": 26.19,
+    "command": "make PYTHON=artifacts/runtime/make_check/Scripts/python.exe test",
+    "post_cache_optimization_focused_tests": 6
+  },
+  "ruff": "passed",
+  "pip_check": "No broken requirements found",
+  "source_sha256": {
+    "clients.csv": "a09082edcf6043549eecb9ebb55d51e76b8421fd784a6a0843b5556735f83a5d",
+    "loan_snapshots.csv": "d603d7955f2c19895a9c7090b82ea801eb6a1810ba3e95b39014c1c3767da75d",
+    "payment_attempts.csv": "390b8d7c68c3e56c208e0f1c6421897e24e92948243efd504516ca5743c7da06"
+  },
+  "model_hash": "c3a3a43d91aece2cdba732076ab19c318ede0a50512a868aa70534b8665e6c21",
+  "original_source_and_probability_model_unchanged": true,
+  "audit_assertions": {
+    "variants": 8,
+    "daily_rows": 240,
+    "lender_rows": 96,
+    "financial_reconciliation": true,
+    "same_fixed_cost": true,
+    "separate_cumulative_capacity_invariants": true,
+    "zero_ordinary_day_B_when_recent_gate_on": true,
+    "unpaced_control_reproduces_selector_v3": true
+  },
+  "original_observed_legacy_margin": 80758.2429309392,
+  "weak_recent_calendar_B_other_attempts": 36568,
+  "neutral_pacing_without_gate_model_gap": 819642.9864235972,
+  "neutral_pacing_plus_gate_model_gap": 271134.4746403376,
+  "gap_reduction_sensitivity": {
+    "pacing_only": 0.27247195372471733,
+    "pacing_and_admission": 0.759336762614576
+  },
+  "negative_estimated_april_lenders": {
+    "paced_0.75__calendar_off": [
+      "C11"
+    ],
+    "paced_0.75__calendar_on": [
+      "C07",
+      "C11"
+    ],
+    "paced_1.00__calendar_off": [],
+    "paced_1.00__calendar_on": [
+      "C07",
+      "C11"
+    ],
+    "paced_1.25__calendar_off": [],
+    "paced_1.25__calendar_on": [],
+    "unpaced__calendar_off": [],
+    "unpaced__calendar_on": []
+  },
+  "runtime_default_changed": false,
+  "limitations": [
+    "No causal attribution or identified uplift",
+    "No six-month demand/state forecast or realistic sequential ceiling",
+    "Calendar gate and release schedules are post-inspection sensitivities, not an optimized policy",
+    "Operational outcome feedback and richer response features remain open"
+  ],
+  "horizon_runtime_seconds": 275.74924570007715,
+  "pdf": {
+    "path": "output/pdf/design_document.pdf",
+    "pages": 3,
+    "visual_review": "All three pages inspected; modified last page rechecked after final lender note",
+    "sha256": "c38f976684a1629bca1224cae3b49f6380c6c86d178e86f44d1b71c559ed9c32"
+  },
+  "markdown_link_check": {
+    "documents": 21,
+    "broken_local_links": 0
+  }
+}

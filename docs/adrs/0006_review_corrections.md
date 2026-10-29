@@ -66,3 +66,19 @@ Evidence: [review appendix](../11_external_review.md),
 [money tests](../../tests/test_synthetic_evaluation.py),
 [accounting views](../../reports/evaluation/economic_views_v1/README.md),
 [refit summary](../../reports/evaluation/refit_v1/summary.json).
+
+## Horizon/admission sensitivity addendum - 2026-10-29
+
+A January-only calendar observation is insufficient evidence for continued use. Keep the
+literal any-history count but expose recent monthly counts and weak support. A diagnostic
+admission gate requires at least 100 pure provider/date-type attempts in a qualifying month
+among the last two calendar months through the fitted cutoff (which may truncate a month).
+The gate changes admission, not probabilities, and is not a causal-support guarantee.
+
+A separate evaluator varies cumulative A release through contract expiry: unrestricted,
+0.75/1/1.25 times even release from the opening remaining balance. Both policies receive
+identical schedules/admission rules in independent ledgers, with carryover and a hard
+contract cap. Logged plans are retained whole using outcome-independent hash order; their
+cash is subset accounting, not observed counterfactual policy value. Keep the original
+observed benchmark and fixed cost attribution. No schedule is declared optimal, and the
+runtime default is unchanged. April comparisons are post-inspection sensitivities.

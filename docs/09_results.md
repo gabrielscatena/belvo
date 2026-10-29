@@ -13,24 +13,11 @@ The response model uses labels through March 30 under D-2 availability; it was n
 inspection engineering replay**, not an independent test. Original [frozen_v1](../reports/evaluation/frozen_v1/results.md)
 and [verified_v2](../reports/evaluation/verified_v2/results.md) remain preserved.
 
-## Money under one declared convention
-
-| April net margin, sampled portfolio | Original selector | Corrected selector |
-|---|---:|---:|
-| Observed legacy | 80,758.24 | 80,758.24 |
-| Same-model estimated legacy | 107,146.78 | 107,146.78 |
-| Candidate model scenario | 1,228,967.16 | 1,233,760.38 |
-| Candidate downside stress | 713,158.07 | 724,993.83 |
-| Relaxed same-model ceiling | 1,257,322.98 | 1,257,322.98 |
-
-Every row uses the same population, April states, equal fixed lender weights and 30/181
-of the commitment. [Lender totals](../reports/evaluation/selector_v3/per_client.csv) reconcile.
-Multiplying by 15 gives only a sample-based full-book point extrapolation, not a constrained
-full-book solution. Candidate minus estimated legacy is 1,126,613.59, not causal uplift.
-
-Estimated legacy margin exceeds observation by 26,388.54 (32.7% of observed net margin).
-On **commission revenue**, the same error is 12.0%; these percentages use different
-denominators. A downside stress does not correct model misspecification.
+The initial unrestricted candidate spends **291,698 / 433,108 = 67.35%** of the April 1
+remaining capacity in **30 / 91 days**. That anticipates future capacity use. A prorated
+April account is not a contract-value comparison. The identical fixed prepaid expense
+cancels in a candidate-minus-legacy difference; the missing future opportunity cost must
+be investigated through policy and demand sensitivities, not a second cash charge.
 
 ## What the response model misses
 
@@ -52,6 +39,13 @@ finds 91,149 candidate attempts with zero exact joint-cell observations and 150,
 100 observations, despite passing coarse model support. Zero counts warn of sparsity;
 positive counts do not establish exchangeability or causal identification.
 
+In particular, **36,568 B attempts occur on ordinary days**. Their 665 provider/calendar
+observations all come from January 3/6/9; 28,002 (76.58%) have zero expanded joint-cell
+history. The original `outside_calendar_support=0` meant only that *some* historical
+observation existed. It did not indicate adequate recent support. The
+[revised diagnostic](../reports/evaluation/calibration_v2/candidate_support.csv) adds recent
+counts and months meeting a minimum, and labels weak recent coverage explicitly.
+
 The [known-truth stress](../reports/validation/synthetic_stress_v1.json) varies success with
 amount/calendar, makes providers equally effective and uses B only on calendar peaks in
 legacy. Candidate commission is estimated at 2,653,794.82 versus true expectation
@@ -60,7 +54,63 @@ legacy. Candidate commission is estimated at 2,653,794.82 versus true expectatio
 Synthetic bias does not quantify bias in Belvo's data. The synthetic oracle conditions on
 frozen states and relaxes lender requirements; it is not a sequential contract ceiling.
 
-## Uncertainty and ceiling
+## Horizon and recent-calendar sensitivity
+
+The [eight-scenario replay](../reports/evaluation/horizon_v1/summary.json) applies the same
+opening capacity, cumulative release schedule and admission rule to both policies in
+independent ledgers. With R=433,108 remaining units and 91 contract days, released units
+by day d are min(R, floor(R * multiplier * elapsed_days / 91)); unspent units carry forward.
+The neutral schedule releases 142,782 units through April. It need not be optimal.
+
+Recent-calendar admission requires at least 100 pure attempts in one qualifying month
+among February/March through March 30, separately by provider/date type. It changes plan
+admission, not estimated probabilities. Both policies use the same frozen legacy-history
+lender budgets; operational feedback and changed future states remain absent.
+
+| Release schedule | April A ceiling | Candidate model margin, gate off | Candidate model margin, gate on | Filtered legacy model margin |
+|---|---:|---:|---:|---:|
+| Unrestricted | 433,108 | 1,233,760.38 | 1,114,707.53 | 107,146.78 |
+| 0.75 times even release | 107,087 | 854,209.91 | 333,871.96 | 106,860.20 |
+| Even release | 142,782 | 926,789.77 | 378,281.26 | 107,146.78 |
+| 1.25 times even release | 178,478 | 1,020,713.48 | 492,849.16 | 107,146.78 |
+
+All rows use the same April fixed cost. The filtered legacy model margin is identical
+with/without the calendar gate because all logged April actions pass it. The original
+observed benchmark remains 80,758.24. At 0.75 release, a status-blind hash filter removes
+46 whole A plans (114 attempts); their realized commission happens to be zero, so retained
+observed money stays equal to the benchmark despite different actions. This coincidence
+does not make filtered replay an observed counterfactual policy.
+
+Pacing alone reduces the original same-model difference by 27.2%, while increasing
+unsupported ordinary-day B attempts from 36,568 to **87,482**. Adding recent-calendar
+admission removes those attempts and reduces the difference by 75.9% to 271,134.47.
+These interacting sensitivities do not identify a causal decomposition of front-loading,
+targeting or model bias, and do not establish any of these gains as realizable.
+
+[Per-lender margins](../reports/evaluation/horizon_v1/per_client.csv) reconcile with each
+scenario. **C07 and C11 have negative estimated April margins under even release plus
+calendar admission.** At 0.75 with admission both are negative; without admission C11 is
+negative. No variant is selected as the production policy, and positive April estimates
+in other variants do not establish contract profitability. [Daily ledgers](../reports/evaluation/horizon_v1/daily.csv)
+verify consumption never exceeds the released or physical capacity in either policy.
+
+## Audit appendix: original conditional money, uncertainty and model bound
+
+These amounts retain the original response model and unrestricted April capacity. They
+are published for reproducibility, not as the headline result or business forecast.
+
+| April net margin, sampled portfolio | Original selector | Corrected selector |
+|---|---:|---:|
+| Observed legacy | 80,758.24 | 80,758.24 |
+| Same-model estimated legacy | 107,146.78 | 107,146.78 |
+| Candidate model scenario | 1,228,967.16 | 1,233,760.38 |
+| Candidate downside stress | 713,158.07 | 724,993.83 |
+| Relaxed same-model bound | 1,257,322.98 | 1,257,322.98 |
+
+Identical states, lender weights and 30/181 of upfront apply to every row. Lender totals
+reconcile. Scaling by 15 is a point extrapolation, not full-book optimization. Estimated
+legacy net margin exceeds observed by 32.7%, while its revenue error is 12.0%: denominators
+differ. Candidate minus estimated legacy is not measured causal uplift.
 
 The original 400-loan-cluster resamples hold predictions fixed. Additional
 [training-cluster refits](../reports/evaluation/refit_v1/summary.json) fit 20 models using

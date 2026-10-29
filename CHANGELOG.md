@@ -131,3 +131,11 @@ they are elapsed wall time, not measured active development effort.
 |---|---|---|---:|---|
 | 1 - calendar support | 16:16:53 | 16:25:27 | 8.58 | Nonzero count hid January-only coverage -> add recent monthly exposure/gate and tests -> all 36,568 ordinary-day B attempts correctly flagged; original outputs preserved. |
 | 2 - horizon/admission comparison | 16:25:28 | 16:33:45 | 8.29 | Missing intertemporal stress -> run eight equal-rule quota/calendar scenarios with separate ledgers -> 275.75s replay, money/capacity reconcile; neutral gated scenario has C07/C11 losses. |
+| 3 - delivery revision | 16:33:45 | 16:35:28 | 1.72 | Misleading model anchor -> move conditional money to audit appendix, expose support and horizon/lender failures -> three-page design checked, 21 document links valid, 119 tests and lint pass. |
+
+These are checkpoint intervals; concurrent work can begin before a preceding stage's
+commit. They must not be summed as measured active effort. Runtime of the final eight-
+scenario replay was 275.75 seconds; full tests 26.19 seconds. Calendar correction commit:
+615a168. Horizon comparison commit: 795588b. Original raw data, probability model and
+frozen evaluations were preserved. Optional richer response modeling and operational
+feedback remain explicit follow-up work rather than silently claimed implementation.
