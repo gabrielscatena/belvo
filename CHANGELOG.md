@@ -110,3 +110,4 @@ work. Initial active start was not recorded. Original evaluation evidence is pre
 | Stage | Start checkpoint | End checkpoint | Elapsed minutes | Context -> Action -> Result |
 |---|---|---|---:|---|
 | 1 - functional corrections | N/R | 07:57:16 | N/R | Slack-capacity plan ordering/setup failures -> versioned selector improvements and locked Makefile -> 15 new selection regressions; fresh setup/test/lint pass. |
+| 2 - economic diagnostics | 07:57:16 | 07:57:56 | 0.68 | Unreliable economic evidence -> add exact-money tests, calendar/amount/history support, synthetic truth, training refits and cost views -> reproduced revised April with unchanged response model; causal gain remains unproven. |

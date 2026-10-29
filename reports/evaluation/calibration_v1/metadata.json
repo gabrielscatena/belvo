@@ -1,0 +1,23 @@
+{
+  "amount_edges_cents": [
+    null,
+    30000.0,
+    50000.0,
+    64665.0,
+    100000.0,
+    122176.0,
+    145389.0,
+    165853.0,
+    198712.0,
+    null
+  ],
+  "buckets_fixed_through": "2026-02-27",
+  "calendar_definition": "month_start=1,midmonth=15/16,month_end=last;others=other;not actual payday",
+  "history": "observed submissions before D, failures through D-delay; left-truncated",
+  "warning": "Exploratory slices after April inspection; no model retuning, causal identification or calibrated bias range",
+  "source_sha256": {
+    "clients.csv": "a09082edcf6043549eecb9ebb55d51e76b8421fd784a6a0843b5556735f83a5d",
+    "loan_snapshots.csv": "d603d7955f2c19895a9c7090b82ea801eb6a1810ba3e95b39014c1c3767da75d",
+    "payment_attempts.csv": "390b8d7c68c3e56c208e0f1c6421897e24e92948243efd504516ca5743c7da06"
+  }
+}

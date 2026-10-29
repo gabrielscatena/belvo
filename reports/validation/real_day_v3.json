@@ -1,0 +1,81 @@
+{
+  "recorded_at": "2026-10-29T07:56:59.021713-03:00",
+  "date": "2026-04-01",
+  "base_commit_before_review_changes": "c862b5ab4cf5b3f565e66810835dc9f866879b79",
+  "code_scope": "Post-review working tree; report included with the implementing commit",
+  "python": "3.12.14",
+  "environment": "artifacts/runtime/make_check; fresh make setup with conf/requirements-mvp.lock",
+  "selector_version": "economic_heuristic_v2",
+  "model_hash": "c3a3a43d91aece2cdba732076ab19c318ede0a50512a868aa70534b8665e6c21",
+  "model_format": "belvo.empirical.v2",
+  "model_through": "2026-03-30",
+  "commands": [
+    "artifacts/runtime/make_check/Scripts/python.exe -m belvo.pipelines.persistent --date 2026-04-01 --policy economic --state artifacts/runtime/review_check_v3/engine.sqlite --provider-state artifacts/runtime/review_check_v3/provider.sqlite --output artifacts/runtime/review_check_v3/run1",
+    "artifacts/runtime/make_check/Scripts/python.exe -m belvo.pipelines.persistent --date 2026-04-01 --policy economic --state artifacts/runtime/review_check_v3/engine.sqlite --provider-state artifacts/runtime/review_check_v3/provider.sqlite --output artifacts/runtime/review_check_v3/run2"
+  ],
+  "no_dispatch": true,
+  "received_loans": 4640,
+  "decisions": 4640,
+  "unique_loan_days": 4640,
+  "status_counts": {
+    "attempt": 4628,
+    "no_attempt": 12
+  },
+  "provider_attempts": {
+    "A": 9579,
+    "B": 1435
+  },
+  "quota": {
+    "id": 1,
+    "total": 666666,
+    "consumed": 233558,
+    "reserved": 9579,
+    "free": 423529
+  },
+  "database_counts_before_replay": {
+    "decisions": 4640,
+    "decision_events": 4640,
+    "attempts": 11014,
+    "batches": 1,
+    "receipts": 4640,
+    "models": 1,
+    "source_heads": 4652
+  },
+  "database_counts_after_replay": {
+    "decisions": 4640,
+    "decision_events": 4640,
+    "attempts": 11014,
+    "batches": 1,
+    "receipts": 4640,
+    "models": 1,
+    "source_heads": 4652
+  },
+  "assertions": {
+    "one_decision_per_received_loan": true,
+    "cent_precision_caps_balance_and_count_limits": true,
+    "json_and_csv_decisions_byte_identical_on_replay": true,
+    "source_versions_byte_identical_on_replay": true,
+    "replay_creates_no_attempts_decisions_models_or_receipts": true,
+    "quota_unchanged_nonnegative_and_reconciled": true,
+    "all_decisions_reference_persisted_immutable_model": true,
+    "model_restoration_verified": true,
+    "selector_identity_matches_state_and_decision_reasons": true,
+    "history_quarantine_empty_for_supplied_data": true,
+    "only_ready_simulated_intents_no_external_dispatch": true,
+    "benchmark_decision_hash_and_quota_match": true
+  },
+  "decisions_hash": "5800272b1e88a7ce09ebff7a57f40b57974fe59a893ed9988d1f354205659c9a",
+  "model_artifact_sha256": "28c9775a643eaf3c9d8f6235a842a996ea2860fd46a47df4a122d4f8d446b186",
+  "source_sha256": {
+    "clients.csv": "a09082edcf6043549eecb9ebb55d51e76b8421fd784a6a0843b5556735f83a5d",
+    "loan_snapshots.csv": "d603d7955f2c19895a9c7090b82ea801eb6a1810ba3e95b39014c1c3767da75d",
+    "payment_attempts.csv": "390b8d7c68c3e56c208e0f1c6421897e24e92948243efd504516ca5743c7da06"
+  },
+  "application_sha256": {
+    "src/belvo/optimization/select.py": "d19a62412c2e03b5c4e519959d828f351aefd687d4f1e11062516dca99a0e938",
+    "src/belvo/pipelines/persistent.py": "c528c1b7e5f29b9f4f4d53da97b63ec526991f32a433bcd51824b9ccee8e6b5c",
+    "src/belvo/models/empirical.py": "18c1083f2372c52e0254f399e0c855c95190fa29507f69676717838cbc372c6f",
+    "src/belvo/state.py": "ff4023b57f51d28dd77465910d5279732a87724832b0742bea0c1468b440bdea"
+  },
+  "evidence": "Full private-data exports and new local stores remain ignored under artifacts/runtime/review_check_v3"
+}

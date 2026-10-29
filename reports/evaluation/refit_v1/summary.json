@@ -1,0 +1,78 @@
+{
+  "scope": "Training-loan cluster refits of fixed candidate and legacy action compositions",
+  "training_through": "2026-03-30",
+  "training_loans": 8073,
+  "repetitions": 20,
+  "seed": 42,
+  "fixed_cost": 110497.23756906077,
+  "point_model_hash": "c3a3a43d91aece2cdba732076ab19c318ede0a50512a868aa70534b8665e6c21",
+  "point_estimates": {
+    "candidate_estimated_margin": 1233760.376710522,
+    "legacy_estimated_margin": 107146.78343331035,
+    "estimated_uplift": 1126613.5932772118,
+    "candidate_unsupported_plan_fraction": 0.0
+  },
+  "parameter_resampling_intervals": {
+    "candidate_estimated_margin": {
+      "p025": 1059899.4438690345,
+      "median": 1235468.764643481,
+      "p975": 1517899.7039848473
+    },
+    "legacy_estimated_margin": {
+      "p025": 95305.96831846457,
+      "median": 109124.53085892939,
+      "p975": 120331.61524130552
+    },
+    "estimated_uplift": {
+      "p025": 949131.8622537049,
+      "median": 1121583.4653304787,
+      "p975": 1410063.313364748
+    }
+  },
+  "policy_reselection": false,
+  "counterfactual_state_simulation": false,
+  "warnings": [
+    "Only training-cluster parameter resampling; conditional on the original action choices",
+    "Excludes confounding, structural model error, future demand and policy-selection uncertainty",
+    "Frozen legacy balances and action compositions; not a sequential or six-month confidence interval",
+    "Small replication counts have substantial Monte Carlo error; interval widening is not guaranteed",
+    "A refit may lose cell support; fixed actions are still scored and support loss is reported"
+  ],
+  "protocol": {
+    "version": "2026-10-28-v1",
+    "contract_start": "2026-01-01",
+    "contract_end": "2026-06-30",
+    "train_end": "2026-02-28",
+    "validation_start": "2026-03-01",
+    "validation_end": "2026-03-31",
+    "test_start": "2026-04-01",
+    "test_end": "2026-04-30",
+    "outcome_delay_days": 2,
+    "sample_weight": 15,
+    "full_a_capacity": 10000000,
+    "full_a_upfront": "10000000",
+    "b_fee": "2.00",
+    "allocation": "equal_lenders",
+    "max_installments": 3,
+    "amount_fractions": [
+      "0.25",
+      "0.50",
+      "0.75",
+      "1.00"
+    ],
+    "a_opportunity_cost": "0.00",
+    "min_cell_attempts": 100,
+    "prior_strength": 100,
+    "conservative_z": 1.0,
+    "seed": 42
+  },
+  "evaluation_directory": "reports\\evaluation\\selector_v3",
+  "selector_version": "economic_heuristic_v2",
+  "source_sha256": {
+    "clients.csv": "a09082edcf6043549eecb9ebb55d51e76b8421fd784a6a0843b5556735f83a5d",
+    "loan_snapshots.csv": "d603d7955f2c19895a9c7090b82ea801eb6a1810ba3e95b39014c1c3767da75d",
+    "payment_attempts.csv": "390b8d7c68c3e56c208e0f1c6421897e24e92948243efd504516ca5743c7da06"
+  },
+  "frozen_actions_sha256": "9c7b4931db57866c5413d4b543b1c41c95d0a47f40bd293a98e694626be1ce66",
+  "runtime_seconds": 202.78209170000628
+}

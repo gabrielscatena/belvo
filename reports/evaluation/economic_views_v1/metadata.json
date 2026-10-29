@@ -1,0 +1,42 @@
+{
+  "scope": "April conditional one-step replay on legacy states, sample scale",
+  "pretest_weight_window": {
+    "start_inclusive": "2026-01-01",
+    "end_exclusive": "2026-04-01",
+    "basis": "Submitted A attempts, independent of payment outcomes"
+  },
+  "pretest_A_units_by_lender": {
+    "C01": 27601,
+    "C02": 21947,
+    "C03": 22843,
+    "C04": 21816,
+    "C05": 22533,
+    "C06": 16880,
+    "C07": 16835,
+    "C08": 28077,
+    "C09": 16118,
+    "C10": 21213,
+    "C11": 5714,
+    "C12": 11981
+  },
+  "fixed_period_A_cost": "110497.23756906077",
+  "source_sha256": {
+    "summary.json": "c754a999cb348e32c19b252757f3302b8a078296996facf9434e452cb3716acc",
+    "per_client.csv": "ec8a0ab1ccf941f6114f17c6960d1c5215c5416d04bdfe06287fec34318f4d55",
+    "payment_attempts.csv": "390b8d7c68c3e56c208e0f1c6421897e24e92948243efd504516ca5743c7da06",
+    "loan_snapshots.csv": "d603d7955f2c19895a9c7090b82ea801eb6a1810ba3e95b39014c1c3767da75d",
+    "clients.csv": "a09082edcf6043549eecb9ebb55d51e76b8421fd784a6a0843b5556735f83a5d"
+  },
+  "warnings": [
+    "Frozen actions and response model are unchanged; no policy reoptimization.",
+    "Pretest weights are held identical across policies; own-policy weights are diagnostic.",
+    "Tariff 1*A is not allocation of the same fixed prepaid cash commitment.",
+    "Usage pricing omits unused commitment; the monthly residual can be negative.",
+    "Subtracting that residual reconciles usage pricing to the allocated cash margin.",
+    "Lambda is a decision penalty, never an additional accounting expense.",
+    "No lambda was selected, no forecast fitted, and no six-month margin is identified.",
+    "No forced June-30 capacity exhaustion target is imposed.",
+    "April diagnostics do not create new untouched-test evidence.",
+    "Six-decimal published per-lender inputs can differ from headline sums by rounding."
+  ]
+}

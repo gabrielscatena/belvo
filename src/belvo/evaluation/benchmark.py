@@ -56,7 +56,13 @@ def main():
                 portfolio_clients={loan.client_id for loan in valid},
                 source_revision=1,
                 model_artifact=model.artifact() | {"model_hash": model.model_hash},
-                decision_basis=fingerprint({"model": model.model_hash, "lender_budget": required}),
+                decision_basis=fingerprint(
+                    {
+                        "selector": EconomicSelector.version,
+                        "model": model.model_hash,
+                        "lender_budget": required,
+                    }
+                ),
             )
             commit_timings.append(perf_counter() - commit_started)
             timings.append(perf_counter() - start)
@@ -85,6 +91,7 @@ def main():
         "decision_hash": hashes[0],
         "quota": quotas[0],
         "protocol": protocol.values,
+        "selector_version": EconomicSelector.version,
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2), encoding="utf-8")
