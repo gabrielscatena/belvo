@@ -7,7 +7,84 @@ from pathlib import Path
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.platypus import (
+    Flowable,
+    PageBreak,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
+
+
+class ArchitectureDiagram(Flowable):
+    """Compact code-native view of the implemented online and offline paths."""
+
+    def __init__(self, width=A4[0] - 88):
+        super().__init__()
+        self.requested_width = width
+        self.width, self.height = width, 85
+
+    def wrap(self, available_width, available_height):
+        self.width = min(self.requested_width, available_width)
+        return self.width, self.height
+
+    def draw(self):
+        canvas = self.canv
+        canvas.saveState()
+        ink = colors.HexColor("#163b59")
+        muted = colors.HexColor("#53657a")
+        gap, bottom, box_height = 18, 39, 31
+        box_width = (self.width - 3 * gap) / 4
+        labels = [
+            ("Receiver", "validator"),
+            ("Planner", "scorer"),
+            ("SQLite state", "outbox"),
+            ("Simulator", "executor"),
+        ]
+        canvas.setFillColor(muted)
+        canvas.setFont("Helvetica", 7.5)
+        canvas.drawCentredString(
+            (3 * box_width + 2 * gap) / 2,
+            77,
+            "Synchronous planning and atomic commit",
+        )
+        canvas.drawCentredString(3 * (box_width + gap) + box_width / 2, 77, "Asynchronous dispatch")
+        for index, (title, subtitle) in enumerate(labels):
+            left = index * (box_width + gap)
+            canvas.setFillColor(colors.HexColor("#e8eff5"))
+            canvas.setStrokeColor(colors.HexColor("#a8b9c7"))
+            canvas.setLineWidth(0.7)
+            canvas.roundRect(left, bottom, box_width, box_height, 4, fill=1, stroke=1)
+            canvas.setFillColor(ink)
+            canvas.setFont("Helvetica-Bold", 8.2)
+            canvas.drawCentredString(left + box_width / 2, bottom + 19, title)
+            canvas.setFont("Helvetica", 8.1)
+            canvas.drawCentredString(left + box_width / 2, bottom + 8, subtitle)
+            if index == len(labels) - 1:
+                continue
+            start, end = left + box_width + 2, left + box_width + gap - 2
+            middle = bottom + box_height / 2
+            canvas.setStrokeColor(ink)
+            canvas.setFillColor(ink)
+            canvas.setDash(2, 2) if index == 2 else canvas.setDash()
+            canvas.line(start, middle, end - 3, middle)
+            canvas.setDash()
+            arrow = canvas.beginPath()
+            arrow.moveTo(end, middle)
+            arrow.lineTo(end - 4, middle + 2.5)
+            arrow.lineTo(end - 4, middle - 2.5)
+            arrow.close()
+            canvas.drawPath(arrow, fill=1, stroke=0)
+        canvas.setFillColor(muted)
+        canvas.setFont("Helvetica", 8)
+        canvas.drawCentredString(
+            self.width / 2,
+            14,
+            "Offline: CSV history -> fitting / reporting; runtime outcomes feedback not implemented.",
+        )
+        canvas.restoreState()
 
 
 def inline(text):
@@ -89,6 +166,9 @@ def main():
         elif line == "<!-- PAGEBREAK -->":
             flush()
             story.append(PageBreak())
+        elif line == "<!-- ARCHITECTURE -->":
+            flush()
+            story.append(ArchitectureDiagram())
         elif line.startswith("# "):
             flush()
             story.append(Paragraph(inline(line[2:]), styles["Title"]))
@@ -104,8 +184,8 @@ def main():
         canvas.line(44, 35, A4[0] - 44, 35)
         canvas.setFont("Helvetica", 8)
         canvas.setFillColor(colors.HexColor("#53657a"))
-        canvas.drawString(44, 23, "Belvo | Smart Collections Engine | 2026-10-28")
-        canvas.drawRightString(A4[0] - 44, 23, f"{doc.page} / 3")
+        canvas.drawString(44, 23, "Belvo | Smart Collections Engine | 29 Oct 2026")
+        canvas.drawRightString(A4[0] - 44, 23, f"Page {doc.page}")
 
     SimpleDocTemplate(
         str(target),

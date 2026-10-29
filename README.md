@@ -1,74 +1,85 @@
 # Smart Collections Engine
 
-Senior Applied Data Scientist take-home. A local decision-engine prototype selects plans to improve estimated absolute collection margin under installment caps and shared prepaid capacity, with explicit lender profitability diagnostics.
+Senior Applied Data Scientist take-home: a local collection engine, transactional execution simulator and offline economic evaluation.
 
-**Delivery:** working prototype, offline evaluation, operational tests and a [three-page design](output/pdf/design_document.pdf) ([editable source](docs/design_document.md)). **Live rollout is not approved:** estimated gains are observational, C11 fails full-cost Jan-Apr coverage, and May-June demand remains unresolved.
+**Finding:** April legacy net margin is **80,758.24** under the sample/monthly cost convention. The prototype generates feasible, auditable plans, but **improvement and six-month lender profitability are not demonstrated**. A known-truth stress test exposes response-model bias; candidate estimates are conditional scenarios, not deployment evidence.
 
-## Run the prototype
+Start with the [three-page design](output/pdf/design_document.pdf), [results](docs/09_results.md) and [review findings](docs/11_external_review.md). The [case specification](docs/provided/CHALLENGE.md) defines the submission requirements.
 
-Use **Python 3.12**. Put the provided `clients.csv`, `loan_snapshots.csv` and `payment_attempts.csv` in `data/raw/` (excluded from Git). From the repository root, run each command after the previous one succeeds:
+## Run
+
+Use **Python 3.12**. Place the supplied `clients.csv`, `loan_snapshots.csv` and `payment_attempts.csv` in `data/raw/` (Git ignores them). Run from the repository root, stopping on any failure.
+
+PowerShell:
 
 ```powershell
 py -3.12 -m venv .venv
 & .\.venv\Scripts\python.exe -m pip install -r conf/requirements-mvp.lock -e ".[mvp]"
-
-# Daily economic decisions; simulated state, no external API calls
-& .\.venv\Scripts\python.exe -m belvo.pipelines.persistent --date 2026-04-01 --policy economic --state artifacts/runtime/delivery_economic.sqlite --provider-state artifacts/runtime/delivery_provider.sqlite
-
-# Frozen temporal offline comparison (several minutes)
+& .\.venv\Scripts\python.exe -m belvo.pipelines.persistent --date 2026-04-01 --policy economic --state artifacts/runtime/review_v3.sqlite --provider-state artifacts/runtime/provider_v3.sqlite
 & .\.venv\Scripts\python.exe -m belvo.evaluation.offline
-
-# Invariants, concurrency, recovery and code checks
 & .\.venv\Scripts\python.exe -m pytest -q --basetemp tests/.pytest_tmp
 & .\.venv\Scripts\python.exe -m ruff check .
 ```
 
-The daily command exports one decision/status per received loan, installment amounts in cents, providers, reason, economic support and lender constraints to `reports/pipeline/<run>/`. Original versions and cap context are retained. Invalid loans produce no new debit. A complete corrected portfolio can additionally report withdrawn loans. `--client C01` limits the full-portfolio scope. Add `--execute` for the **durable simulator**, or `--reconcile` to resolve its unknown submissions. Real provider integration is deliberately absent.
+Bash:
 
-For authoritative same-day corrections, increase `--source-revision` per lender/day; transmission retries retain their original revision. The first receipt may omit the flag. Old simulator stores without source-order metadata require new simulation paths; preserve the originals.
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+make setup
+python -m belvo.pipelines.persistent --date 2026-04-01 --policy economic --state artifacts/runtime/review_v3.sqlite --provider-state artifacts/runtime/provider_v3.sqlite
+python -m belvo.evaluation.offline
+make test lint
+```
 
-Reusing state is an idempotent replay, not a new experiment. Different policies or backward-date experiments require separate state paths. State is initialized with observed historical A submissions before the requested day. See [runbook](docs/08_runbook.md) for baseline, EDA, benchmark and recovery details.
+The daily command exports one decision/status per received loan to `reports/pipeline/<run>/`: installments, cents, providers, reason, provenance and unmet lender constraints. Invalid records produce no debit. Add `--execute` for durable **simulated** dispatch and `--reconcile` for unknown submissions; no external provider is contacted. Offline evaluation takes several minutes and writes a new timestamped directory.
 
-## Results and how much to trust them
+Use separate state for each policy/version or backward-date experiment. Retries retain source revision and contents; authoritative same-day corrections increase `--source-revision` per lender/day. `--client C01` scopes a complete portfolio. Preserve earlier state and outputs. Diagnostic commands and recovery: [runbook](docs/08_runbook.md).
 
-[Full results](docs/09_results.md), [per-lender money](reports/evaluation/verified_v2/per_client.csv), [calibration and uncertainty](reports/evaluation/verified_v2/summary.json), [sensitivity](reports/evaluation/verified_v2/sensitivities.csv).
+## Evidence and its limits
 
-| April net margin under allocated monthly prepaid-cost convention - sampled portfolio | Amount |
+The original [frozen evaluation](reports/evaluation/frozen_v1/results.md) and [verified reproduction](reports/evaluation/verified_v2/results.md) remain intact. The [current replay](reports/evaluation/selector_v3/results.md) fixes selection after April inspection, with **identical fitted response probabilities**. It is an engineering revision, not a new untouched holdout.
+
+| April net margin, sampled portfolio, same allocated prepaid expense | Currency units |
 |---|---:|
 | Observed legacy | 80,758.24 |
 | Same-model estimated legacy | 107,146.78 |
-| Estimated candidate | 1,228,967.16 |
-| Conservative candidate stress | 713,158.07 |
-| Relaxed supported-plan model ceiling | 1,257,322.98 |
+| Candidate scenario after selector correction | 1,233,760.38 |
+| Candidate downside stress score | 724,993.83 |
+| Relaxed same-model ceiling | 1,257,322.98 |
 
-Identical April states, lender weights and **30/181 of prepaid cost** are used for every row. The candidate consumes 275,962 A units, leaving 157,146 after prior use. Lender margins reconcile with the total. Positive estimated April margins do not establish six-month profitability: **C11 remains negative when the whole commitment is charged in Jan-Apr coverage**.
+All rows subtract 30/181 of the same A commitment with equal fixed lender weights. [Per-lender amounts](reports/evaluation/selector_v3/per_client.csv) reconcile. C11 is positive in this estimated April view but negative in Jan-Apr coverage with the whole commitment charged; this does not prove six-month infeasibility.
 
-The same-model candidate-minus-legacy estimate is **1,121,820.38**, not established causal business value. Candidate volume is **318,115 attempts versus 93,772 legacy (3.39x)**, increasing extrapolation, debtor-interference and operational risks. Only 5.59% of candidate loan-day actions exactly match legacy; coarse support cells do not identify causal provider/amount effects. The model already overstates observed legacy margin by 26,388.54. The candidate is the best feasible restricted policy found; the 28,355.82 gap to a relaxed model ceiling is conditional on that response model. A true sequential six-month ceiling is not identifiable here. Loan bootstrap excludes model bias and future-state uncertainty.
+Three checks explain why the apparent gain is not a business forecast:
 
-May-June is unobserved. All tested fixed-composition continuation demands exceed remaining quota; their projected margins are null. The daily selector enforces capacity and can choose B/no-attempt, but future economic allocation needs refinement. Sample weight 15 provides a full-book point extrapolation, not an exact full-book optimization.
+- **Model adequacy:** [real-data calibration](reports/evaluation/calibration_v1/calibration_slices.csv) overestimates commission on April ordinary calendar days by 27.6%; amount-bucket errors are uneven. The estimator omits absolute amount, calendar and observed loan history as predictors.
+- **Action support:** only 5.96% of candidate loan-day actions exactly match legacy. Of 333,851 candidate attempts, 91,149 have zero training observations in the expanded lender/provider/plan/DPD/fraction/calendar/amount cell. Coarse support does not establish causal overlap.
+- **Known truth:** [synthetic stress](reports/validation/synthetic_stress_v1.json) makes providers equally effective while success varies with amount/calendar. Estimated candidate commission is **2.43 times** true expected commission. This demonstrates a failure mode, not Belvo's bias factor. The candidate still beats the sparse synthetic legacy under that generator.
+
+[Training-cluster refits](reports/evaluation/refit_v1/summary.json) add parameter variation: fixed-action candidate margin spans 1.06M-1.52M across empirical 2.5-97.5 percentiles. Twenty refits give coarse tails; these are not business confidence bounds and exclude structural bias, confounding and changed future balances. No causal uplift or realistic sequential ceiling is established.
+
+A uses 291,698 April units, leaving 141,410 after prior observed consumption. Tested May-June continuations exceed that remainder; infeasible projections stay null. Daily capacity is enforced; demand-aware pacing and operational learning/budget feedback remain open. [Economic views](reports/evaluation/economic_views_v1/README.md) separate fixed-cost allocation, usage diagnostics and opportunity penalties without double counting.
 
 ## Architecture and verification
 
-Python modules + local SQLite keep the MVP small. Candidate scoring precedes the write lock; selection, quota reservation, decision and outbox persist atomically. A separate simulated executor uses stable identities. Payment failures consume A; unknown delivery retains reservations until authoritative reconciliation. Corrected records are revalidated automatically; sent/uncertain effects cannot be overwritten. Source revisions order corrections and reject stale retries. Invalid historical loan-days are isolated, and scored decisions reference immutable model artifacts. Prepaid capacity is enforced; opportunity cost is configurable but zero in the frozen evaluation. Runtime outcome feedback into training/budgets remains future work.
+Receiver/validation → planner/scorer → SQLite decisions, quota and outbox → durable simulated executor. Offline fitting/reporting reads supplied CSV history. Python and SQLite keep the MVP small; [architecture](docs/05_architecture.md), [ADRs](docs/adrs/README.md) and [risks](docs/06_assumptions_and_risks.md) describe boundaries.
 
-[Architecture](docs/05_architecture.md), [ADRs](docs/adrs/README.md), [risks](docs/06_assumptions_and_risks.md), [frozen protocol](docs/07_evaluation_protocol.md), [operational evidence](docs/10_validation.md).
+Selection, reservations and send intents commit atomically. Stable identities prevent duplicate simulated effects. Failed payments consume A; unknown delivery retains reservations until authoritative reconciliation. Corrections are automatically revalidated; submitted/uncertain effects stay protected. Immutable source versions and model hashes explain each decision.
 
-Local benchmark for **4,640 loans**: **25.39 s** cold input/validation/fitting plus planning/commit; **2.93 s** warm planning/commit median. Three runs produced identical decisions. These measurements exclude dispatch/export/network and are not a production SLO. The final isolated suite passes **71 tests**. Tests cover independent-process quota contention, concurrent dispatch, interruption, uncertain submissions, expiry, corrections and state failure. The final clean-environment evidence is in [validation](reports/validation/delivery_review.json).
+**105 tests pass** in a newly installed Python 3.12 environment through the corrected Makefile; Ruff and dependency checks pass. Tests cover money, selection, availability, concurrent reservations/dispatch, recovery, duplicates, corrections and expiry. [Validation](docs/10_validation.md) separates current evidence from historical checkpoints. For 4,640 loans: **27.52s cold** and **3.08s warm planning/commit median**; dispatch/export/network are excluded. Three local runs are not a production SLO.
 
-Production is a proposal: shared transactional database, receiver, planner workers, outbox and reconciliation. Rollout starts in shadow, then a capped randomized pilot after calibration/support and lender profitability are addressed. Rollback stops new intents while retaining pending reservations.
+Recommendation: shadow only, then lender-level calibration/support work and a capped randomized pilot before a live improvement claim.
 
 ## Rationale — Context, Action, Result
 
 | Step | Context → Action → Result |
 |---|---|
-| Understand | Read the case and data README → establish economic objective, D/D+1 and sample/contract boundaries. |
-| Visualize | Create Mermaid business, entity and economic diagrams → make flow, constraints and accounting visible. |
-| Formalize | Write docs 01-04 → separate business objective, decision variables, assumptions and open questions. |
-| Profile | Import the existing [EDA tool](https://github.com/gabrielscatena/EDA) via **Git subtree with squash** → quickly profile all three datasets under Python 3.12. |
-| Validate | Build case-specific EDA → verify keys, joins, installment limits, balance evolution and lender economics. |
-| Implement | Record ADRs and freeze protocol → deliver a transactional daily motor, economic heuristic and reproducible comparison. |
-| Challenge claims | Audit support, calibration, quota scenarios and failures → publish limitations and decline live approval. |
+| Understand | Read case/data README → define decision, D/D+1 and sample/contract boundaries. |
+| Visualize | Create Mermaid business, entity and economic diagrams → expose flow and constraints. |
+| Formalize | Write docs 01-04 → state variables, economics, assumptions and open questions. |
+| Profile | Import existing [EDA tool](https://github.com/gabrielscatena/EDA) with **Git subtree / squash** → profile all three datasets under Python 3.12. |
+| Validate | Add case-specific EDA → check keys, joins, caps, balances and lender economics. |
+| Implement | Record ADRs/protocol → build decisions, transactional state and economic comparison. |
+| Challenge | Reproduce external probes → fix selector/setup; add calibration, truth stress, refits and economic views; retain unresolved limits. |
 
-Initial EDA: 12 lenders, 10,714 loans, 561,659 snapshots and 370,101 attempts. Commission 902,448.9620; recorded fees 427,295; usage-priced diagnostic 475,153.9620. That diagnostic is not contract margin. [EDA evidence](reports/eda_belvo/20261028_112854_444227/report.md) includes 1,922 observation gaps and reconciled adjacent-day balances.
-
-AI tools assisted documentation, code and verification. Reused code remains in `tools/eda`; project-owned code is under `src/belvo`. [CHANGELOG](CHANGELOG.md) records commit checkpoints without presenting elapsed gaps as measured active effort. The [case specification](docs/provided/CHALLENGE.md) defines the deliverables.
+Initial EDA: 12 lenders, 10,714 loans, 561,659 snapshots, 370,101 attempts. [EDA evidence](reports/eda_belvo/20261028_112854_444227/report.md) separates usage diagnostics from contract margin. AI tools assisted documentation, code and verification. Reused code stays in `tools/eda`; project code is in `src/belvo`. [CHANGELOG](CHANGELOG.md) records checkpoints without treating commit gaps as measured active effort.

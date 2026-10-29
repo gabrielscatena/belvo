@@ -63,3 +63,28 @@ The [current benchmark](../reports/validation/benchmark_v2.json) measures 25.39s
 This cold run is slower than the original checkpoint; do not present the old 8.95s as current.
 Cold preparation rechecks the supplied CSV history; warm planning reuses a prepared model.
 These are three local samples and exclude dispatch/export, with no percentile SLO claim.
+
+## External-review correction checkpoint - 2026-10-29
+
+Current isolated verification: **105 tests passed in 26.94s**, Ruff clean, and `pip check`
+reports no dependency conflicts. A NEW Python 3.12.14 virtual environment installed the
+locked requirements plus `.[mvp]` via `make setup`; `make test` and `make lint` then passed
+with that same interpreter. Linux CI remains a separate remote check after push.
+
+New tests include independent exact-money offline evaluation (commission 65, B fees 4,
+fixed cost 1, candidate margin 60), failed-attempt fees, lender reconciliation, selector
+slack/scarcity behavior, calibration availability, synthetic truth isolation and refit
+point-estimate reconstruction. No raw provided or synthetic CSVs are committed.
+
+The [current benchmark](../reports/validation/benchmark_v3.json) uses selector
+`economic_heuristic_v2`: 4,640 loans, cold 27.52s, warm planning/commit median 3.08s,
+transaction intervals 1.30-1.49s. Three independent stores produce the same decision hash
+and nonnegative quota. Input/validation/fitting is 23.85s of cold execution. Dispatch,
+export, network and production arrival patterns remain outside scope.
+
+[Current evaluation](../reports/evaluation/selector_v3/summary.json) preserves the original
+fitted response model exactly while changing selection; original checkpoints remain.
+The parameter-refit point reproduces current headline margins within 0.000001. Synthetic
+stress and expanded real-data calibration expose unresolved response inadequacy; test
+success is engineering evidence, not evidence of causal economic gain. See ADR 0006 and
+the [claim-by-claim review](11_external_review.md).

@@ -1,0 +1,62 @@
+{
+  "recorded_at": "2026-10-29T07:56:54.6666473-03:00",
+  "baseline_commit": "c862b5ab4cf5b3f565e66810835dc9f866879b79",
+  "selector_version": "economic_heuristic_v2",
+  "evaluation_revision": "post-review engineering correction; original holdout preserved",
+  "source_sha256": {
+    "clients.csv": "a09082edcf6043549eecb9ebb55d51e76b8421fd784a6a0843b5556735f83a5d",
+    "loan_snapshots.csv": "d603d7955f2c19895a9c7090b82ea801eb6a1810ba3e95b39014c1c3767da75d",
+    "payment_attempts.csv": "390b8d7c68c3e56c208e0f1c6421897e24e92948243efd504516ca5743c7da06"
+  },
+  "environment": {
+    "python": "3.12.14",
+    "fresh_venv": "artifacts/runtime/make_check",
+    "setup": "make PYTHON=artifacts/runtime/make_check/Scripts/python.exe setup",
+    "tests": "make PYTHON=artifacts/runtime/make_check/Scripts/python.exe test",
+    "tests_passed": 105,
+    "test_seconds": 26.94,
+    "ruff": "passed",
+    "pip_check": "No broken requirements found",
+    "remote_ci": "Code revision 537a1e8 passed Linux CI: https://github.com/gabrielscatena/belvo/actions/runs/40861725706; final documentation commit checked separately after push"
+  },
+  "accounting": {
+    "observed_legacy_april": 80758.24293093923,
+    "estimated_legacy_april": 107146.78343329723,
+    "estimated_candidate_april": 1233760.3767097802,
+    "remaining_a": 141410,
+    "per_client_reconciliation": "Verified by economic_views assertions and independent exact-money end-to-end regression",
+    "same_response_model_as_verified_v2": true
+  },
+  "diagnostics": [
+    "reports/evaluation/calibration_v1",
+    "reports/evaluation/economic_views_v1",
+    "reports/evaluation/refit_v1",
+    "reports/validation/synthetic_stress_v1.json"
+  ],
+  "synthetic_commission_optimism": "2.43x under specified provider-neutral amount/calendar DGP; not Belvo bias estimate",
+  "benchmark": {
+    "path": "reports/validation/benchmark_v3.json",
+    "loans": 4640,
+    "cold_seconds": 27.5171436999226,
+    "warm_median_seconds": 3.0839904499589466,
+    "scope": "Full received portfolio, economic selection plus durable commit; no dispatch/export"
+  },
+  "pdf": {
+    "path": "output/pdf/design_document.pdf",
+    "pages": 3,
+    "sha256": "c76522de0f76357896537760d56c41e6cf15b6fd48335cd3a469c9635f8b9b32",
+    "visual_review": "All three rendered pages inspected: diagram, tables and text readable; no clipping"
+  },
+  "unresolved": [
+    "Response model omits absolute amount/calendar/history predictors",
+    "No identified causal uplift or credible sequential six-month ceiling",
+    "No demand-aware quota pacing or selected opportunity price",
+    "No runtime persisted-outcome feedback into model and lender budgets",
+    "C11 six-month profitability not established",
+    "20 refits: coarse conditional parameter percentiles, not business confidence bounds"
+  ],
+  "raw_data_committed": false,
+  "original_evaluation_outputs_preserved": true,
+  "real_day_evidence": "reports/validation/real_day_v3.json",
+  "local_markdown_links": "21 primary/ADR documents checked; zero broken local links"
+}

@@ -111,3 +111,13 @@ work. Initial active start was not recorded. Original evaluation evidence is pre
 |---|---|---|---:|---|
 | 1 - functional corrections | N/R | 07:57:16 | N/R | Slack-capacity plan ordering/setup failures -> versioned selector improvements and locked Makefile -> 15 new selection regressions; fresh setup/test/lint pass. |
 | 2 - economic diagnostics | 07:57:16 | 07:57:56 | 0.68 | Unreliable economic evidence -> add exact-money tests, calendar/amount/history support, synthetic truth, training refits and cost views -> reproduced revised April with unchanged response model; causal gain remains unproven. |
+| 3 - delivery consolidation | 07:58:11 | 07:59:44 | 1.56 | Overstated headline/readability -> lead with observed money and model failure, add ADR/review appendix/diagram -> 3-page PDF visually checked, 21 document links valid; real-day replay identical; code CI green. |
+
+Stage commits: functional correction `ddf4078`; economic diagnostics `537a1e8`.
+Fresh Makefile test execution: 26.94 seconds (105 passed). Training refit diagnostic:
+202.78 seconds (20 repetitions). Current benchmark is 27.52s cold / 3.08s warm median;
+these are separate runtime measurements, not additive development effort. Original
+frozen_v1 and verified_v2 directories are byte-unchanged against c862b5a. Response model
+probabilities are unchanged; selection is revised and April inspection is disclosed.
+Remaining modeling, causal identification, demand pacing and feedback gaps are documented;
+no live-performance, all-lender contract-profitability or realistic-ceiling claim is made.

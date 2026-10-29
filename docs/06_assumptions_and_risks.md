@@ -30,6 +30,11 @@ Schema/state failures fail the job before sending; isolated invalid rows do not.
 identities remain quarantined source records rather than invented loans. Invalid corrections
 cancel unsent plans; submitted/uncertain plans remain reconcilable and cannot be replaced.
 
-The attached review is accepted with a reference correction: the D/D+1 sentence appears
-on PDF page 2, not page 1. Use the portable checked-in specification. Competition between
-collection agencies is a discussion hypothesis, not a case requirement.
+The case specifies submission on D and results on D+1; precise receipt times are absent.
+Use the portable checked-in specification. Competition between collection agencies is a
+discussion hypothesis, not a case requirement.
+
+The response model omits absolute amount, calendar and observed history. Stratified
+calibration and a known-truth stress expose consequential model risk without identifying
+a causal bias correction. Demand-aware allocation and runtime outcome feedback remain
+open; six-month profitability and an achievable sequential ceiling are unestablished.
