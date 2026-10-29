@@ -1,12 +1,14 @@
 .PHONY: setup setup-data test lint
+PYTHON ?= python
+
 setup:
-	python -m pip install -e ".[dev]"
+	$(PYTHON) -m pip install -r conf/requirements-mvp.lock -e ".[mvp]"
 
 setup-data:
-	python -m pip install -e ".[dev,data]"
+	$(PYTHON) -m pip install -e ".[dev,data]"
 
 test:
-	python -m pytest -q
+	$(PYTHON) -m pytest -q
 
 lint:
-	python -m ruff check .
+	$(PYTHON) -m ruff check .

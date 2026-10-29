@@ -7,6 +7,7 @@ from pathlib import Path
 
 from belvo.config import Protocol
 from belvo.domain import fingerprint
+from belvo.optimization.select import EconomicSelector
 from belvo.pipelines.daily import export, load_day, read_csv
 from belvo.state import SimulatedProvider, Store, execute, reconcile
 
@@ -42,7 +43,8 @@ def main():
     attempts = read_csv(args.data_dir / "payment_attempts.csv", {"attempt_date", "provider"})
     consumed = sum(r["provider"] == "A" and r["attempt_date"] < args.date for r in attempts)
     store = Store(args.state, p, consumed=consumed)
-    store.bind_policy(args.policy + "-v1")
+    policy_identity = EconomicSelector.version if args.policy == "economic" else "baseline-v1"
+    store.bind_policy(policy_identity)
     provider = SimulatedProvider(args.provider_state)
     store.bind_provider(provider.identity)
     if args.reconcile:
@@ -61,7 +63,6 @@ def main():
     if args.policy == "economic":
         from belvo.models.empirical import fit_for_day, load_history
         from belvo.optimization.select import (
-            EconomicSelector,
             no_history_decisions,
             zero_future_budget,
         )
@@ -91,7 +92,7 @@ def main():
         model = fit_for_day(history, p, args.date, allow_empty=True)
         if model is None:
             selector = no_history_decisions
-            decision_basis = "economic:no_available_training_history"
+            decision_basis = policy_identity + ":no_available_training_history"
         else:
             requirements = zero_future_budget(
                 history, args.date, p, clients={r["client_id"] for r in client_rows}
@@ -107,7 +108,13 @@ def main():
             model_path = args.state.with_suffix(".models") / (model.model_hash + ".json")
             model.save(model_path)
             model_artifact = model.artifact() | {"model_hash": model.model_hash}
-            decision_basis = fingerprint({"model": model.model_hash, "lender_budget": requirements})
+            decision_basis = fingerprint(
+                {
+                    "selector": policy_identity,
+                    "model": model.model_hash,
+                    "lender_budget": requirements,
+                }
+            )
     decisions = store.commit_day(
         valid,
         rejected,
@@ -129,6 +136,7 @@ def main():
         raw,
         {
             "protocol": p.values,
+            "policy_identity": policy_identity,
             "quota": store.quota(),
             "state": str(args.state),
             "simulated": True,

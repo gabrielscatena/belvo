@@ -101,3 +101,12 @@ The original frozen_v1 artifacts and original benchmark are preserved. Current m
 provenance v2 and results are in verified_v2; fitted cells/probabilities are unchanged.
 The cold measurement is slower than the original checkpoint and is not hidden by using
 its old number. No production latency SLO or causal uplift is claimed.
+
+## External review implementation - 2026-10-29 (UTC-03)
+
+Elapsed checkpoints below include verification and tools; they are not measured active
+work. Initial active start was not recorded. Original evaluation evidence is preserved.
+
+| Stage | Start checkpoint | End checkpoint | Elapsed minutes | Context -> Action -> Result |
+|---|---|---|---:|---|
+| 1 - functional corrections | N/R | 07:57:16 | N/R | Slack-capacity plan ordering/setup failures -> versioned selector improvements and locked Makefile -> 15 new selection regressions; fresh setup/test/lint pass. |

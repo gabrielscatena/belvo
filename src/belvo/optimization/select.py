@@ -23,6 +23,8 @@ def no_history_decisions(loans, quota, protocol):
 
 
 class EconomicSelector:
+    version = "economic_heuristic_v2"
+
     def __init__(self, model, required_today=None, supported_only=True):
         self.model = model
         self.required = required_today
@@ -46,6 +48,55 @@ class EconomicSelector:
                     continue
                 candidates.append((plan, value))
             self._options[loan] = candidates
+
+    @staticmethod
+    def _score_key(item):
+        plan, value = item
+        return value["score"], -plan.a_units, -len(plan.amounts)
+
+    def _improve(self, options, selected, loan_map, totals, remaining):
+        """Improve current choices without reversing a satisfied lender requirement.
+
+        Replacements use incremental capacity, including for loans already using A.
+        Under scarcity this is a local heuristic, not an optimality certificate.
+        """
+        changed = True
+        while changed:
+            changed = False
+            for key in sorted(selected):
+                current, current_value = selected[key]
+                client = loan_map[key].client_id
+                floor = (
+                    min(totals[client], self.required[client])
+                    if self.required is not None and client in self.required
+                    else float("-inf")
+                )
+                feasible = [
+                    item
+                    for item in options[key]
+                    if item[0].a_units - current.a_units <= remaining
+                    and totals[client]
+                    + (
+                        item[1]["conservative_contribution"]
+                        - current_value["conservative_contribution"]
+                    )
+                    >= floor
+                ]
+                replacement = max(feasible, key=self._score_key)
+                plan, value = replacement
+                # Strict score improvement or equal score with less capacity ensures termination.
+                if (value["score"], -plan.a_units) <= (
+                    current_value["score"], -current.a_units
+                ):
+                    continue
+                totals[client] += (
+                    value["conservative_contribution"]
+                    - current_value["conservative_contribution"]
+                )
+                remaining -= plan.a_units - current.a_units
+                selected[key] = replacement
+                changed = True
+        return remaining
 
     def __call__(self, loans: list[Loan], quota: int, protocol):
         self.prepare(loans, protocol)
@@ -91,6 +142,22 @@ class EconomicSelector:
                 )
                 remaining -= plan.a_units
                 selected[key] = plan, value
+        # Independent score maxima are globally optimal when all shared constraints permit them.
+        independent = {
+            key: max(candidates, key=self._score_key) for key, candidates in options.items()
+        }
+        independent_units = sum(plan.a_units for plan, _ in independent.values())
+        independent_totals = defaultdict(float)
+        for key, (_, value) in independent.items():
+            independent_totals[loan_map[key].client_id] += value["conservative_contribution"]
+        requirements_met = self.required is None or all(
+            client in self.required and total >= self.required[client]
+            for client, total in independent_totals.items()
+        )
+        if independent_units <= quota and requirements_met:
+            selected, totals, remaining = independent, independent_totals, quota - independent_units
+        else:
+            remaining = self._improve(options, selected, loan_map, totals, remaining)
         self.report = {
             client: {
                 "conservative_today_contribution": totals[client],
@@ -116,7 +183,7 @@ class EconomicSelector:
                     "version": loan.version,
                     "plan": plan.payload(),
                     "status": "attempt" if plan.amounts else "no_attempt",
-                    "reason": "economic_heuristic_v1"
+                    "reason": self.version
                     if plan.amounts
                     else "no_supported_positive_plan",
                     "economics": value,
