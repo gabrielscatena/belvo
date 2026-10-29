@@ -130,3 +130,4 @@ they are elapsed wall time, not measured active development effort.
 | Stage | Start checkpoint | End checkpoint | Elapsed minutes | Context -> Action -> Result |
 |---|---|---|---:|---|
 | 1 - calendar support | 16:16:53 | 16:25:27 | 8.58 | Nonzero count hid January-only coverage -> add recent monthly exposure/gate and tests -> all 36,568 ordinary-day B attempts correctly flagged; original outputs preserved. |
+| 2 - horizon/admission comparison | 16:25:28 | 16:33:45 | 8.29 | Missing intertemporal stress -> run eight equal-rule quota/calendar scenarios with separate ledgers -> 275.75s replay, money/capacity reconcile; neutral gated scenario has C07/C11 losses. |
