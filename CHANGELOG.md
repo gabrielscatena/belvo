@@ -121,3 +121,12 @@ frozen_v1 and verified_v2 directories are byte-unchanged against c862b5a. Respon
 probabilities are unchanged; selection is revised and April inspection is disclosed.
 Remaining modeling, causal identification, demand pacing and feedback gaps are documented;
 no live-performance, all-lender contract-profitability or realistic-ceiling claim is made.
+
+## Follow-up review - 2026-10-29 (UTC-03)
+
+Initial inspection checkpoint: 16:16:53. Intervals include tool execution and verification;
+they are elapsed wall time, not measured active development effort.
+
+| Stage | Start checkpoint | End checkpoint | Elapsed minutes | Context -> Action -> Result |
+|---|---|---|---:|---|
+| 1 - calendar support | 16:16:53 | 16:25:27 | 8.58 | Nonzero count hid January-only coverage -> add recent monthly exposure/gate and tests -> all 36,568 ordinary-day B attempts correctly flagged; original outputs preserved. |

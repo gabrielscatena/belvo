@@ -3,7 +3,7 @@
 import argparse
 import hashlib
 import json
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 
 import numpy as np
@@ -11,20 +11,11 @@ import pandas as pd
 
 from belvo.config import Protocol, commission_percent
 from belvo.domain import Loan, Plan
+from belvo.models.calendar_support import CalendarSupport, calendar_type
 from belvo.models.empirical import EmpiricalModel, fit_for_day, load_history
 
 CELL = ["client_id", "provider", "count", "band", "fraction", "pure"]
 SUPPORT = ["client_id", "provider", "count", "band", "fraction", "calendar", "amount_bucket"]
-
-
-def calendar_type(value):
-    """Calendar proxy, not an assertion about a borrower's actual payday."""
-    day = date.fromisoformat(value)
-    if day.day == 1:
-        return "month_start"
-    if day.day in (15, 16):
-        return "midmonth"
-    return "month_end" if (day + timedelta(days=1)).month != day.month else "other"
 
 
 def amount_edges(frame, through):
@@ -225,7 +216,14 @@ def candidate_slices(rows, frame, edges, model):
                 "amount_bucket",
                 "attempts",
                 "mean_amount_cents",
+                "any_history_calendar_attempts",
                 "outside_calendar_support",
+                "zero_any_history_calendar_support",
+                "recent_calendar_training_attempts",
+                "recent_calendar_months_observed",
+                "recent_calendar_qualifying_months",
+                "outside_recent_calendar_support",
+                "weak_recent_calendar_support",
                 "zero_joint_support",
                 "below_100_joint_attempts",
             ]
@@ -233,10 +231,41 @@ def candidate_slices(rows, frame, edges, model):
     actions = add_strata(pd.DataFrame(records), edges)
     train = add_strata(frame.loc[frame.attempt_date.le(model.fitted_through) & frame.pure], edges)
     actions = support_counts(train, actions)
+    recent_support = CalendarSupport(frame, model.fitted_through)
+    calendar_rows = []
+    for row in (
+        actions[["provider", "calendar", "attempt_date"]]
+        .drop_duplicates(["provider", "calendar"])
+        .itertuples()
+    ):
+        support = recent_support.check(row.provider, row.attempt_date)
+        calendar_rows.append(
+            {
+                "provider": row.provider,
+                "calendar": row.calendar,
+                "recent_calendar_attempts": support["recent_attempts"],
+                "recent_calendar_months": support["recent_months_observed"],
+                "recent_calendar_qualifying_months": support["recent_qualifying_months"],
+                "recent_calendar_admitted": support["admitted"],
+            }
+        )
+    actions = actions.merge(
+        pd.DataFrame(calendar_rows), on=["provider", "calendar"], validate="many_to_one"
+    )
     report = actions.groupby(["provider", "calendar", "amount_bucket"], as_index=False).agg(
         attempts=("amount_cents", "size"),
         mean_amount_cents=("amount_cents", "mean"),
+        any_history_calendar_attempts=("provider_calendar_attempts", "first"),
         outside_calendar_support=("provider_calendar_attempts", lambda x: int(x.eq(0).sum())),
+        zero_any_history_calendar_support=(
+            "provider_calendar_attempts",
+            lambda x: int(x.eq(0).sum()),
+        ),
+        recent_calendar_training_attempts=("recent_calendar_attempts", "first"),
+        recent_calendar_months_observed=("recent_calendar_months", "first"),
+        recent_calendar_qualifying_months=("recent_calendar_qualifying_months", "first"),
+        outside_recent_calendar_support=("recent_calendar_admitted", lambda x: int((~x).sum())),
+        weak_recent_calendar_support=("recent_calendar_admitted", lambda x: int((~x).sum())),
         zero_joint_support=("joint_training_attempts", lambda x: int(x.eq(0).sum())),
         below_100_joint_attempts=("joint_training_attempts", lambda x: int(x.lt(100).sum())),
     )
@@ -261,18 +290,37 @@ def run(data, output, protocol, evaluation=None):
         tables.append(calibration_slices(score_attempts(frame, model, start, end), period))
     pd.concat(tables).to_csv(output / "calibration_slices.csv", index=False)
     pd.crosstab(frame.attempt_date, frame.provider).to_csv(output / "provider_by_date.csv")
+    candidate_support_metadata = None
     if evaluation is not None:
         rows = pd.read_csv(evaluation / "loan_day_estimates.csv")
         model = EmpiricalModel.from_artifact(json.loads((evaluation / "model.json").read_text()))
         candidate_slices(rows, frame, edges, model).to_csv(
             output / "candidate_support.csv", index=False
         )
+        support = CalendarSupport(frame, model.fitted_through)
+        candidate_support_metadata = {
+            "model_through": model.fitted_through,
+            "recent_months": list(support.recent_months),
+            "minimum_attempts_total_and_per_qualifying_month": support.minimum_attempts,
+            "minimum_qualifying_months": support.minimum_months,
+            "evaluation_dir": str(evaluation),
+            "model_hash": model.model_hash,
+        }
     metadata = {
         "amount_edges_cents": [v if np.isfinite(v) else None for v in edges],
         "buckets_fixed_through": protocol.known_attempt_through(
             protocol.values["validation_start"]
         ),
         "calendar_definition": "month_start=1,midmonth=15/16,month_end=last;others=other;not actual payday",
+        "calendar_support_definition": {
+            "outside_calendar_support": "compatibility alias for zero_any_history_calendar_support; zero does not establish adequate support",
+            "zero_any_history_calendar_support": "count of candidate attempts with zero pure-plan provider/calendar exposures through model cutoff",
+            "weak_recent_calendar_support": "count of candidate attempts failing >=100 pure exposures total and >=1 recent month containing >=100 exposures within last two calendar months through cutoff",
+            "outside_recent_calendar_support": "alias for weak_recent_calendar_support",
+            "recent_months": "two calendar months ending in cutoff month; latest month can be partial (February + March through March 30 for April model)",
+            "restriction": "exposure-based sensitivity only, no response outcomes used and no causal guarantee",
+        },
+        "candidate_support": candidate_support_metadata,
         "history": "observed submissions before D, failures through D-delay; left-truncated",
         "warning": "Exploratory slices after April inspection; no model retuning, causal identification or calibrated bias range",
         "source_sha256": {

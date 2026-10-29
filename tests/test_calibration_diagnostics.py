@@ -124,3 +124,34 @@ def test_empty_diagnostic_populations_produce_empty_tables():
     model = EmpiricalModel(Protocol.load()).fit(frame(), "2026-02-27")
     scored = score_attempts(frame(), model, "2026-04-01", "2026-04-30")
     assert calibration_slices(scored, "test").empty
+
+
+def test_recent_support_exposes_january_only_b_despite_nonzero_any_history():
+    january = pd.concat([frame().iloc[:1]] * 120, ignore_index=True).assign(
+        provider="B", attempt_date="2026-01-03"
+    )
+    future = january.assign(attempt_date="2026-04-03")
+    model = EmpiricalModel(Protocol.load()).fit(january, "2026-03-30")
+    rows = pd.DataFrame(
+        [
+            {
+                "client_id": "C1",
+                "day": "2026-04-02",
+                "balance_cents": 10000,
+                "cap_cents": 10000,
+                "dpd": 0,
+                "candidate_a": 0,
+                "candidate_b": 1,
+                "candidate_amounts_cents": "[10000]",
+                "candidate_providers": '["B"]',
+            }
+        ]
+    )
+    report = candidate_slices(rows, pd.concat([january, future]), [-np.inf, np.inf], model).iloc[0]
+    assert report.any_history_calendar_attempts == 120
+    assert report.outside_calendar_support == 0
+    assert report.zero_any_history_calendar_support == 0
+    assert report.recent_calendar_training_attempts == 0
+    assert report.recent_calendar_months_observed == 0
+    assert report.recent_calendar_qualifying_months == 0
+    assert report.weak_recent_calendar_support == 1

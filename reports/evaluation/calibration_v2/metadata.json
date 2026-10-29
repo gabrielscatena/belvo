@@ -1,0 +1,42 @@
+{
+  "amount_edges_cents": [
+    null,
+    30000.0,
+    50000.0,
+    64665.0,
+    100000.0,
+    122176.0,
+    145389.0,
+    165853.0,
+    198712.0,
+    null
+  ],
+  "buckets_fixed_through": "2026-02-27",
+  "calendar_definition": "month_start=1,midmonth=15/16,month_end=last;others=other;not actual payday",
+  "calendar_support_definition": {
+    "outside_calendar_support": "compatibility alias for zero_any_history_calendar_support; zero does not establish adequate support",
+    "zero_any_history_calendar_support": "count of candidate attempts with zero pure-plan provider/calendar exposures through model cutoff",
+    "weak_recent_calendar_support": "count of candidate attempts failing >=100 pure exposures total and >=1 recent month containing >=100 exposures within last two calendar months through cutoff",
+    "outside_recent_calendar_support": "alias for weak_recent_calendar_support",
+    "recent_months": "two calendar months ending in cutoff month; latest month can be partial (February + March through March 30 for April model)",
+    "restriction": "exposure-based sensitivity only, no response outcomes used and no causal guarantee"
+  },
+  "candidate_support": {
+    "model_through": "2026-03-30",
+    "recent_months": [
+      "2026-02",
+      "2026-03"
+    ],
+    "minimum_attempts_total_and_per_qualifying_month": 100,
+    "minimum_qualifying_months": 1,
+    "evaluation_dir": "reports\\evaluation\\selector_v3",
+    "model_hash": "c3a3a43d91aece2cdba732076ab19c318ede0a50512a868aa70534b8665e6c21"
+  },
+  "history": "observed submissions before D, failures through D-delay; left-truncated",
+  "warning": "Exploratory slices after April inspection; no model retuning, causal identification or calibrated bias range",
+  "source_sha256": {
+    "clients.csv": "a09082edcf6043549eecb9ebb55d51e76b8421fd784a6a0843b5556735f83a5d",
+    "loan_snapshots.csv": "d603d7955f2c19895a9c7090b82ea801eb6a1810ba3e95b39014c1c3767da75d",
+    "payment_attempts.csv": "390b8d7c68c3e56c208e0f1c6421897e24e92948243efd504516ca5743c7da06"
+  }
+}
